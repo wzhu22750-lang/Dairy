@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 备份导出文件位于 cacheDir/exports/ 下 -->
+    <cache-path
+        name="exports"
+        path="exports/" />
+</paths>
