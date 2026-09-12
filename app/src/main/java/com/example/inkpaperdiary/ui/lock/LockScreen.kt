@@ -2,7 +2,7 @@ package com.example.inkpaperdiary.ui.lock
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -99,7 +99,7 @@ fun LockScreen(
                 Text(
                     text = "输入密码",
                     style = MaterialTheme.typography.titleLarge,
-                    fontFamily = com.example.inkpaperdiary.core.designsystem.SansFontFamily,
+                    fontFamily = SansFontFamily,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -107,7 +107,7 @@ fun LockScreen(
                 Text(
                     text = "解锁以访问你的日记",
                     style = MaterialTheme.typography.bodySmall,
-                    fontFamily = com.example.inkpaperdiary.core.designsystem.SansFontFamily,
+                    fontFamily = SansFontFamily,
                     color = MaterialTheme.colorScheme.secondary
                 )
 
@@ -140,7 +140,7 @@ fun LockScreen(
                     Text(
                         text = "尝试次数过多，请 ${lockoutSeconds} 秒后再试",
                         style = MaterialTheme.typography.bodySmall,
-                        fontFamily = com.example.inkpaperdiary.core.designsystem.SansFontFamily,
+                        fontFamily = SansFontFamily,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -165,7 +165,7 @@ fun LockScreen(
                                     modifier = Modifier
                                         .size(76.dp)
                                         .clip(CircleShape)
-                                        .clickable {
+                                        .iosClick {
                                             BiometricHelper.showBiometricPrompt(
                                                 activity = context,
                                                 onSuccess = { viewModel.unlockByBiometric() },
@@ -190,7 +190,7 @@ fun LockScreen(
                                 modifier = Modifier
                                     .size(76.dp)
                                     .clip(CircleShape)
-                                    .clickable { viewModel.deletePinDigit() },
+                                    .iosClick { viewModel.deletePinDigit() },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -209,7 +209,7 @@ fun LockScreen(
                                 modifier = Modifier
                                     .size(76.dp)
                                     .clip(CircleShape)
-                                    .clickable { viewModel.appendPinDigit(key) }
+                                    .iosClick { viewModel.appendPinDigit(key) }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(

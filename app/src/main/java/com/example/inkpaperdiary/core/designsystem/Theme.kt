@@ -1,9 +1,11 @@
 package com.example.inkpaperdiary.core.designsystem
 
 import android.app.Activity
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -56,6 +58,7 @@ private val DarkColorScheme = darkColorScheme(
     outlineVariant = PaperColors.MonoGray800
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaperDiaryTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -76,7 +79,12 @@ fun PaperDiaryTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = PaperTypography,
-        shapes = PaperShapes,
-        content = content
-    )
+        shapes = PaperShapes
+    ) {
+        CompositionLocalProvider(
+            LocalRippleConfiguration provides null,
+            LocalIndication provides com.example.inkpaperdiary.core.designsystem.interaction.NoIndication,
+            content = content
+        )
+    }
 }

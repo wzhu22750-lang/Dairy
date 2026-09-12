@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-06T18:28:00Z
+# BRIEFING — 2026-09-06T18:30:40Z
 
 ## Mission
 Survey the existing Android Jetpack Compose codebase (com.example.inkpaperdiary) to map UI architecture, catalog Material 3 idioms, identify navigation structure, and map file boundaries for Apple HIG refactoring.
@@ -21,14 +21,23 @@ Survey the existing Android Jetpack Compose codebase (com.example.inkpaperdiary)
 - Updated: not yet
 
 ## Investigation State
-- **Explored paths**: .agents/ORIGINAL_REQUEST.md, .agents/explorer_survey_1/DISPATCH.md
-- **Key findings**: Task is to map all existing UI architecture, Material 3 idioms (TopAppBar, FAB, MoreVert, ripples, dialogs), navigation graph, and refactoring boundaries.
-- **Unexplored areas**: app/src/main/java/com/example/inkpaperdiary/**/*
+- **Explored paths**:
+  - `app/build.gradle.kts`, `gradle/libs.versions.toml`
+  - `MainActivity.kt`, `ui/navigation/AppNavigation.kt`, `ui/navigation/NavRoutes.kt`
+  - All 9 screens in `ui/` (`timeline`, `editor`, `calendar`, `onthisday`, `search`, `settings`, `stats`, `trash`, `lock`)
+  - `core/designsystem/*` (`AppleMaterial.kt`, `Color.kt`, `Theme.kt`, `Type.kt`, `Shape.kt`, `components/*`)
+  - Models, DAOs, repositories, security, sync
+- **Key findings**:
+  - Codebase builds and passes unit tests cleanly (`./gradlew assembleDebug` and `./gradlew test`).
+  - Identified all Material 3 idioms: static `TopAppBar` on all screens, FAB on Timeline, 3-dot overflow `MoreVert` menus on Timeline top bar and card items, standard ink ripples on all clicks, `AlertDialog`s and Android framework `DatePickerDialog`/`TimePickerDialog`.
+  - Mapped 7 new files to create for R1/R2/R3, 10 files to refactor, and 22 non-UI core files to keep 100% untouched for R4.
+- **Unexplored areas**: None within scope.
 
 ## Key Decisions Made
-- Prioritize comprehensive scanning of app/src/main/java and build dependencies to catalog all UI screens, components, theme tokens, and navigation graph.
+- Cataloged every Material 3 idiom with file and line references.
+- Mapped dual-tier navigation model: 4-tab bar (`Journal`, `Calendar`, `Memories`, `Settings`) + modal/push detail navigation (`Editor`, `Search`, `Stats`, `Trash`, `Lock`).
 
 ## Artifact Index
-- .agents/explorer_survey_1/survey_codebase.md — Full survey report
-- .agents/explorer_survey_1/handoff.md — 5-component handoff report
-- .agents/explorer_survey_1/progress.md — Liveness heartbeat
+- `/Users/kuangqie/Documents/VibeCoding/日记本/.agents/explorer_survey_1/survey_codebase.md` — Full survey report
+- `/Users/kuangqie/Documents/VibeCoding/日记本/.agents/explorer_survey_1/handoff.md` — 5-component handoff report
+- `/Users/kuangqie/Documents/VibeCoding/日记本/.agents/explorer_survey_1/progress.md` — Liveness heartbeat

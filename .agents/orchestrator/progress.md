@@ -1,18 +1,25 @@
 # Progress — Project Orchestrator
 
-Last visited: 2026-09-06T18:30:05+08:00
+Last visited: 2026-09-06T18:50:05+08:00
 
 ## Current Status
 - [x] Initialized orchestrator state (DISPATCH.md, BRIEFING.md, progress.md)
-- [x] Dispatched Step 0 Survey Explorers:
-  - Explorer 1 (b38995bf-a648-4588-8e1b-fac4f9401343): UI Architecture & Existing Material 3 Codebase [RUNNING]
-  - Spec Miner 2 (6db36905-2a66-4a11-8c44-de859010dde3): iOS HIG Primitives & Component Specifications [RUNNING]
-  - Explorer 3 (fdcf74fd-4e07-400b-bf09-6518609f1908): Non-UI Domain, Room/Security/Sync, & Build Setup [RUNNING]
-- [ ] Await survey completions and aggregate findings into PROJECT.md
-- [ ] Decompose milestones and setup Dual Track (Implementation & E2E Testing)
-- [ ] Execute milestones with sub-orchestrators / iteration loops
-- [ ] Verify E2E acceptance criteria and assembleDebug
-- [ ] Final handoff and completion report to Sentinel
+- [x] Step 0 Survey completed by 3 subagents (UI Architecture, HIG Specs, Domain & Build)
+- [x] Created `PROJECT.md` with Feature Inventory (16 features cross-checked) and 6 Milestones (M1-M6)
+- [x] E2E Testing Track completed initial suite (`TEST_INFRA.md`, `TEST_READY.md`, 152 tests passing in ~2s) [READY]
+- [x] Milestone 1 Implementation & Verification Gate: **PASSED**
+  - Worker M1: 0 compile errors, 100% tests passing
+  - Reviewer 1: APPROVE
+  - Reviewer 2: APPROVE
+  - Challenger 1: APPROVE (23 stress tests passing)
+  - Challenger 2: APPROVE (13 empirical challenge tests passing)
+  - Forensic Auditor: CLEAN (zero cheating, zero non-UI pollution, genuine math formulas)
+- [x] Advanced to Milestone 2 (Root Navigation & Collapsible Large Title)
+- [x] Dispatched M2 Explorers:
+  - Explorer M2-1 (2eb55e6c-2f3e-4716-a1e5-d5d1eda08fbe): IosTabBar [RUNNING]
+  - Explorer M2-2 (0bd77962-36ee-4909-a401-9106e8c20b40): IosLargeTitleScaffold [RUNNING]
+  - Explorer M2-3 (28c0234b-ad87-44c4-96df-aa04bcb72b60): 2-Tier AppNavigation & Idiom Removal [RUNNING]
+- [ ] Await M2 Explorers -> Trigger Succession Protocol (spawn count 16/16 reached) to hand off to Successor Orchestrator for M2 implementation.
 
 ## Iteration Status
-Current iteration: 1 / 32
+Current iteration: 2 / 32

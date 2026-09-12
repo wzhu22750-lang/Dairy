@@ -1,7 +1,5 @@
 package com.example.inkpaperdiary.core.designsystem.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,7 +15,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
-import com.example.inkpaperdiary.core.designsystem.PaperColors
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 
 /**
  * 现代 iOS HIG 材质卡片组件 (Apple HIG Material Surface Card)
@@ -28,7 +26,8 @@ import com.example.inkpaperdiary.core.designsystem.PaperColors
  * 2. Apple HIG 材质层级 (默认采用 Thick 厚材质，高对比度悬浮)
  * 3. 0.5.dp 细发丝微光玻璃折射边框 (Hairline Specular Glass Border)
  * 4. 极简轻量环境柔和微投影 (Elevation 1~2.dp)
- * 5. 置顶指示：左侧精致圆润药丸指示条
+ * 5. 置顶指示：左侧精致圆润药丸指示条 (3dp 宽，14dp 上下边距)
+ * 6. 交互物理：采用 iOS 弹簧缩放 (0.97f) 与通透度衰减 (0.85f)，彻底消除 Material 水波纹
  */
 @Composable
 fun PaperCard(
@@ -41,16 +40,26 @@ fun PaperCard(
     elevation: Dp = 1.dp,
     hasCeladonAccent: Boolean = false,
     accentColor: Color = MaterialTheme.colorScheme.primary,
+    enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val glassBorder = AppleMaterials.glassBorder(width = borderWidth)
 
+    val interactionModifier = if (onClick != null) {
+        Modifier.iosClick(
+            enabled = enabled,
+            onClick = onClick,
+            onLongClick = onLongClick
+        )
+    } else {
+        Modifier
+    }
+
     Card(
         modifier = modifier
-            .then(
-                if (onClick != null) Modifier.clickable { onClick() } else Modifier
-            )
+            .then(interactionModifier)
             .then(
                 if (hasCeladonAccent) {
                     Modifier.drawBehind {

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.CapsuleShape
 import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 
 /**
  * 现代 iOS 胶囊标签组件 (iOS Capsule Pill Tag)
@@ -63,9 +64,9 @@ fun TagChip(
             .background(backgroundColor)
             .border(0.5.dp, borderColor, tagShape)
             .then(
-                if (onClick != null) Modifier.clickable { onClick() } else Modifier
+                if (onClick != null) Modifier.iosClick(onClick = onClick) else Modifier
             )
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+            .padding(horizontal = 10.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
@@ -84,14 +85,19 @@ fun TagChip(
             letterSpacing = 0.sp
         )
         if (onRemove != null) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Remove Tag",
+            Box(
                 modifier = Modifier
-                    .size(12.dp)
-                    .clickable { onRemove() },
-                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary
-            )
+                    .size(16.dp)
+                    .iosClick { onRemove() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Remove Tag",
+                    modifier = Modifier.size(12.dp),
+                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary
+                )
+            }
         }
     }
 }

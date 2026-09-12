@@ -129,6 +129,20 @@ class SettingsViewModel(
         }
     }
 
+    internal var pinVerifier: (suspend (String) -> Boolean)? = null
+
+    suspend fun verifyPin(pin: String): Boolean {
+        return pinVerifier?.invoke(pin) ?: settingsRepository.verifyAppPin(pin)
+    }
+
+    fun verifyPin(pin: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            onResult(verifyPin(pin))
+        }
+    }
+
+    suspend fun verifyAppPin(pin: String): Boolean = verifyPin(pin)
+
     fun setBiometric(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setBiometricEnabled(enabled)

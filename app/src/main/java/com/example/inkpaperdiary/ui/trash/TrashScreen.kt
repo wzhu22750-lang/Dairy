@@ -1,9 +1,9 @@
 package com.example.inkpaperdiary.ui.trash
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteForever
@@ -16,11 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.inkpaperdiary.core.designsystem.AppleMaterials
+import com.example.inkpaperdiary.core.designsystem.MaterialThickness
+import com.example.inkpaperdiary.core.designsystem.SansFontFamily
+import com.example.inkpaperdiary.core.designsystem.components.IosModalDialog
 import com.example.inkpaperdiary.core.designsystem.components.PaperCard
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
+import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrashScreen(
     viewModel: TrashViewModel,
@@ -31,34 +36,63 @@ fun TrashScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(AppleMaterials.glassBorder(width = 0.5.dp)),
+                color = AppleMaterials.backgroundColor(MaterialThickness.REGULAR),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(52.dp)
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .iosIconClick(onClick = onNavigateBack),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                     Text(
                         text = "回收站",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleMedium,
+                        fontFamily = SansFontFamily,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp)
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
                     if (diaries.isNotEmpty()) {
-                        TextButton(onClick = { showEmptyConfirm = true }) {
+                        Box(
+                            modifier = Modifier
+                                .iosClick { showEmptyConfirm = true }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(
                                 text = "清空",
+                                fontFamily = SansFontFamily,
                                 color = MaterialTheme.colorScheme.error,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
@@ -125,10 +159,12 @@ fun TrashScreen(
                                     color = MaterialTheme.colorScheme.secondary
                                 )
 
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    IconButton(
-                                        onClick = { viewModel.restore(diary.id) },
-                                        modifier = Modifier.size(36.dp)
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .iosIconClick { viewModel.restore(diary.id) },
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             Icons.Outlined.Restore,
@@ -137,9 +173,11 @@ fun TrashScreen(
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
-                                    IconButton(
-                                        onClick = { viewModel.permanentDelete(diary.id) },
-                                        modifier = Modifier.size(36.dp)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .iosIconClick { viewModel.permanentDelete(diary.id) },
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             Icons.Outlined.DeleteForever,
@@ -173,40 +211,17 @@ fun TrashScreen(
         }
     }
 
-    if (showEmptyConfirm) {
-        AlertDialog(
-            onDismissRequest = { showEmptyConfirm = false },
-            shape = RoundedCornerShape(20.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            title = {
-                Text(
-                    text = "清空回收站",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "清空后所有已删除日记将被永久销毁，无法恢复。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.emptyTrash()
-                        showEmptyConfirm = false
-                    }
-                ) {
-                    Text("清空", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEmptyConfirm = false }) {
-                    Text("取消", color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        )
-    }
+    IosModalDialog(
+        visible = showEmptyConfirm,
+        title = "清空回收站",
+        message = "清空后所有已删除日记将被永久销毁，无法恢复。",
+        confirmText = "清空",
+        cancelText = "取消",
+        isDestructive = true,
+        onConfirm = {
+            viewModel.emptyTrash()
+            showEmptyConfirm = false
+        },
+        onDismissRequest = { showEmptyConfirm = false }
+    )
 }

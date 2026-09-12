@@ -1,0 +1,3 @@
+[    1337ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ https://developer.apple.com/services-session/v1/info:0
+[    1340ms] [ERROR] Session fetch failed: HTTP 401 @ https://developer.apple.com/tutorials/js/194.f04a124b.js:9
+[    1580ms] [INFO] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: https://www.apple.com/wss/fonts/SF-Mono/v1/sf-mono_semibold.woff @ https://developer.apple.com/tutorials/js/840.7d0a9682.js:9

@@ -1,0 +1,100 @@
+--- a/app/src/main/java/com/example/inkpaperdiary/ui/editor/EditorScreen.kt
++++ b/app/src/main/java/com/example/inkpaperdiary/ui/editor/EditorScreen.kt
+@@ -1,8 +1,6 @@
+ package com.example.inkpaperdiary.ui.editor
+ 
+-import android.app.DatePickerDialog
+-import android.app.TimePickerDialog
+ import androidx.activity.compose.BackHandler
+ import androidx.activity.compose.rememberLauncherForActivityResult
+ import androidx.activity.result.PickVisualMediaRequest
+@@ -78,35 +76,14 @@ fun EditorScreen(
+     var tagInputText by remember { mutableStateOf("") }
+     var locationInputText by remember { mutableStateOf("") }
+ 
++    var showDateTimePickerSheet by remember { mutableStateOf(false) }
++
+     val dateTimeFormatter = remember { SimpleDateFormat("yyyy年M月d日 HH:mm", Locale.getDefault()) }
+     val formattedDateTime = remember(uiState.entryDate) { dateTimeFormatter.format(Date(uiState.entryDate)) }
+ 
+-    // 日期时间选择弹窗
+-    val calendar = remember(uiState.entryDate) {
+-        Calendar.getInstance().apply { timeInMillis = uiState.entryDate }
+-    }
+-
+-    fun pickDateTime() {
+-        DatePickerDialog(
+-            context,
+-            { _, year, month, dayOfMonth ->
+-                calendar.set(Calendar.YEAR, year)
+-                calendar.set(Calendar.MONTH, month)
+-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+-                TimePickerDialog(
+-                    context,
+-                    { _, hourOfDay, minute ->
+-                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+-                        calendar.set(Calendar.MINUTE, minute)
+-                        viewModel.updateEntryDate(calendar.timeInMillis)
+-                    },
+-                    calendar.get(Calendar.HOUR_OF_DAY),
+-                    calendar.get(Calendar.MINUTE),
+-                    true
+-                ).show()
+-            },
+-            calendar.get(Calendar.YEAR),
+-            calendar.get(Calendar.MONTH),
+-            calendar.get(Calendar.DAY_OF_MONTH)
+-        ).show()
+-    }
+-
+     // Markdown 正文：本地持有 TextFieldValue 以支持光标位置插入
+     var contentValue by remember { mutableStateOf(TextFieldValue(uiState.contentMarkdown)) }
+@@ -157,7 +134,7 @@ fun EditorScreen(
+             TopAppBar(
+                 title = {
+                     Surface(
+-                        modifier = Modifier.iosClick { pickDateTime() },
++                        modifier = Modifier.iosClick { showDateTimePickerSheet = true },
+                         shape = CapsuleShape,
+                         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline),
+                         color = MaterialTheme.colorScheme.surfaceVariant
+@@ -186,15 +163,17 @@ fun EditorScreen(
+                 navigationIcon = {
+                     Box(
+                         modifier = Modifier
+-                            .size(40.dp)
+-                            .iosIconClick { viewModel.saveDiary(onNavigateBack) },
++                            .padding(start = 8.dp)
++                            .iosClick { viewModel.saveDiary(onNavigateBack) }
++                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                         contentAlignment = Alignment.Center
+                     ) {
+-                        Icon(
+-                            Icons.AutoMirrored.Filled.ArrowBack,
+-                            contentDescription = "返回并保存",
+-                            tint = MaterialTheme.colorScheme.onSurface,
+-                            modifier = Modifier.size(20.dp)
++                        Text(
++                            text = "取消",
++                            fontFamily = SansFontFamily,
++                            fontWeight = FontWeight.Normal,
++                            fontSize = 16.sp,
++                            color = MaterialTheme.colorScheme.primary
+                         )
+                     }
+                 },
+@@ -617,4 +596,14 @@ fun EditorScreen(
+             modifier = Modifier.fillMaxWidth()
+         )
+     }
++
++    // iOS 日期与时间选择器弹窗 (IosDateTimePickerSheet)
++    IosDateTimePickerSheet(
++        visible = showDateTimePickerSheet,
++        initialTimestamp = uiState.entryDate,
++        onDateTimeSelected = { selectedTimestamp ->
++            viewModel.updateEntryDate(selectedTimestamp)
++        },
++        onDismissRequest = { showDateTimePickerSheet = false }
++    )
+ }

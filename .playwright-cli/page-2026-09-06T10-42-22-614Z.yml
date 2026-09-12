@@ -1,0 +1,316 @@
+- generic [ref=f76e2]:
+  - link "Skip Navigation" [ref=f76e3] [cursor=pointer]:
+    - /url: "#app-main"
+  - navigation "Global" [ref=f76e4]:
+    - list [ref=f76e6]:
+      - listitem [ref=f76e7]:
+        - link "Apple Developer" [ref=f76e8] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=f76e9]:
+        - generic [ref=f76e11]:
+          - list [ref=f76e13]:
+            - listitem [ref=f76e14]:
+              - link "Get Started" [ref=f76e15] [cursor=pointer]:
+                - /url: /get-started/
+            - listitem:
+              - button "Get Started menu"
+          - list [ref=f76e18]:
+            - listitem [ref=f76e19]:
+              - link "Platforms" [ref=f76e20] [cursor=pointer]:
+                - /url: /platforms/
+            - listitem:
+              - button "Platforms menu"
+          - list [ref=f76e23]:
+            - listitem [ref=f76e24]:
+              - link "Technologies" [ref=f76e25] [cursor=pointer]:
+                - /url: /technologies/
+            - listitem:
+              - button "Technologies menu"
+          - list [ref=f76e28]:
+            - listitem [ref=f76e29]:
+              - link "Community" [ref=f76e30] [cursor=pointer]:
+                - /url: /community/
+            - listitem:
+              - button "Community menu"
+          - list [ref=f76e33]:
+            - listitem [ref=f76e34]:
+              - link "Documentation" [ref=f76e35] [cursor=pointer]:
+                - /url: /documentation/
+            - listitem:
+              - button "Documentation menu"
+          - list [ref=f76e38]:
+            - listitem [ref=f76e39]:
+              - link "Downloads" [ref=f76e40] [cursor=pointer]:
+                - /url: /download/
+            - listitem:
+              - button "Downloads menu"
+          - list [ref=f76e43]:
+            - listitem [ref=f76e44]:
+              - link "Support" [ref=f76e45] [cursor=pointer]:
+                - /url: /support/
+            - listitem:
+              - button "Support menu"
+      - listitem [ref=f76e47]:
+        - button "Search" [ref=f76e48] [cursor=pointer]
+      - listitem [ref=f76e49]:
+        - link "Account" [ref=f76e51]:
+          - /url: /account/
+  - contentinfo [ref=f76e53]:
+    - radiogroup "Select a color scheme preference" [ref=f76e55]:
+      - generic [ref=f76e57]:
+        - radio "Light" [ref=f76e58]
+        - generic [ref=f76e59]: Light
+      - generic [ref=f76e60]:
+        - radio "Dark" [ref=f76e61]
+        - generic [ref=f76e62]: Dark
+      - generic [ref=f76e63]:
+        - radio "Auto" [checked] [ref=f76e64]
+        - generic [ref=f76e65]: Auto
+  - contentinfo [ref=f76e67]:
+    - navigation [ref=f76e68]:
+      - link "Apple" [ref=f76e69] [cursor=pointer]:
+        - /url: https://www.apple.com
+        - text: 
+      - list [ref=f76e72]:
+        - listitem [ref=f76e73]:
+          - link "Developer" [ref=f76e74] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=f76e75]:
+          - link "Documentation" [ref=f76e76] [cursor=pointer]:
+            - /url: /documentation/
+      - generic [ref=f76e77]:
+        - generic [ref=f76e78]:
+          - generic [ref=f76e79]:
+            - heading "Platforms" [level=3] [ref=f76e80]
+            - list [ref=f76e81]:
+              - listitem [ref=f76e82]:
+                - link "iOS" [ref=f76e83] [cursor=pointer]:
+                  - /url: /ios/
+              - listitem [ref=f76e84]:
+                - link "iPadOS" [ref=f76e85] [cursor=pointer]:
+                  - /url: /ipados/
+              - listitem [ref=f76e86]:
+                - link "macOS" [ref=f76e87] [cursor=pointer]:
+                  - /url: /macos/
+              - listitem [ref=f76e88]:
+                - link "tvOS" [ref=f76e89] [cursor=pointer]:
+                  - /url: /tvos/
+              - listitem [ref=f76e90]:
+                - link "visionOS" [ref=f76e91] [cursor=pointer]:
+                  - /url: /visionos/
+              - listitem [ref=f76e92]:
+                - link "watchOS" [ref=f76e93] [cursor=pointer]:
+                  - /url: /watchos/
+          - generic [ref=f76e94]:
+            - heading "Tools" [level=3] [ref=f76e95]
+            - list [ref=f76e96]:
+              - listitem [ref=f76e97]:
+                - link "Swift" [ref=f76e98] [cursor=pointer]:
+                  - /url: /swift/
+              - listitem [ref=f76e99]:
+                - link "SwiftUI" [ref=f76e100] [cursor=pointer]:
+                  - /url: /swiftui/
+              - listitem [ref=f76e101]:
+                - link "Swift Playground" [ref=f76e102] [cursor=pointer]:
+                  - /url: /swift-playground/
+              - listitem [ref=f76e103]:
+                - link "TestFlight" [ref=f76e104] [cursor=pointer]:
+                  - /url: /testflight/
+              - listitem [ref=f76e105]:
+                - link "Xcode" [ref=f76e106] [cursor=pointer]:
+                  - /url: /xcode/
+              - listitem [ref=f76e107]:
+                - link "Xcode Cloud" [ref=f76e108] [cursor=pointer]:
+                  - /url: /xcode-cloud/
+              - listitem [ref=f76e109]:
+                - link "SF Symbols" [ref=f76e110] [cursor=pointer]:
+                  - /url: /sf-symbols/
+        - generic [ref=f76e112]:
+          - heading "Topics & Technologies" [level=3] [ref=f76e113]
+          - list [ref=f76e114]:
+            - listitem [ref=f76e115]:
+              - link "Accessibility" [ref=f76e116] [cursor=pointer]:
+                - /url: /accessibility/
+            - listitem [ref=f76e117]:
+              - link "Accessories" [ref=f76e118] [cursor=pointer]:
+                - /url: /accessories/
+            - listitem [ref=f76e119]:
+              - link "App Extension" [ref=f76e120] [cursor=pointer]:
+                - /url: /app-extensions/
+            - listitem [ref=f76e121]:
+              - link "App Store" [ref=f76e122] [cursor=pointer]:
+                - /url: /app-store/
+            - listitem [ref=f76e123]:
+              - link "Audio & Video" [ref=f76e124] [cursor=pointer]:
+                - /url: /audio/
+            - listitem [ref=f76e125]:
+              - link "Augmented Reality" [ref=f76e126] [cursor=pointer]:
+                - /url: /augmented-reality/
+            - listitem [ref=f76e127]:
+              - link "Design" [ref=f76e128] [cursor=pointer]:
+                - /url: /design/
+            - listitem [ref=f76e129]:
+              - link "Distribution" [ref=f76e130] [cursor=pointer]:
+                - /url: /distribute/
+            - listitem [ref=f76e131]:
+              - link "Education" [ref=f76e132] [cursor=pointer]:
+                - /url: /education/
+            - listitem [ref=f76e133]:
+              - link "Fonts" [ref=f76e134] [cursor=pointer]:
+                - /url: /fonts/
+            - listitem [ref=f76e135]:
+              - link "Games" [ref=f76e136] [cursor=pointer]:
+                - /url: /games/
+            - listitem [ref=f76e137]:
+              - link "Health & Fitness" [ref=f76e138] [cursor=pointer]:
+                - /url: /health-fitness/
+            - listitem [ref=f76e139]:
+              - link "In-App Purchase" [ref=f76e140] [cursor=pointer]:
+                - /url: /in-app-purchase/
+            - listitem [ref=f76e141]:
+              - link "Localization" [ref=f76e142] [cursor=pointer]:
+                - /url: /localization/
+            - listitem [ref=f76e143]:
+              - link "Maps & Location" [ref=f76e144] [cursor=pointer]:
+                - /url: /maps/
+            - listitem [ref=f76e145]:
+              - link "Machine Learning & AI" [ref=f76e146] [cursor=pointer]:
+                - /url: /machine-learning/
+            - listitem [ref=f76e147]:
+              - link "Open Source" [ref=f76e148] [cursor=pointer]:
+                - /url: https://opensource.apple.com/
+            - listitem [ref=f76e149]:
+              - link "Security" [ref=f76e150] [cursor=pointer]:
+                - /url: /security/
+            - listitem [ref=f76e151]:
+              - link "Safari & Web" [ref=f76e152] [cursor=pointer]:
+                - /url: /safari/
+        - generic [ref=f76e153]:
+          - generic [ref=f76e154]:
+            - heading "Resources" [level=3] [ref=f76e155]
+            - list [ref=f76e156]:
+              - listitem
+              - listitem [ref=f76e157]:
+                - link "Documentation" [ref=f76e158] [cursor=pointer]:
+                  - /url: /documentation/
+              - listitem [ref=f76e159]:
+                - link "Tutorials" [ref=f76e160] [cursor=pointer]:
+                  - /url: /learn/
+              - listitem [ref=f76e161]:
+                - link "Downloads" [ref=f76e162] [cursor=pointer]:
+                  - /url: /download/
+              - listitem [ref=f76e163]:
+                - link "Forums" [ref=f76e164] [cursor=pointer]:
+                  - /url: /forums/
+              - listitem [ref=f76e165]:
+                - link "Videos" [ref=f76e166] [cursor=pointer]:
+                  - /url: /videos/
+          - generic [ref=f76e167]:
+            - heading "Support" [level=3] [ref=f76e168]
+            - list [ref=f76e169]:
+              - listitem [ref=f76e170]:
+                - link "Support Articles" [ref=f76e171] [cursor=pointer]:
+                  - /url: /support/articles/
+              - listitem [ref=f76e172]:
+                - link "Contact Us" [ref=f76e173] [cursor=pointer]:
+                  - /url: /contact/
+              - listitem [ref=f76e174]:
+                - link "Bug Reporting" [ref=f76e175] [cursor=pointer]:
+                  - /url: /bug-reporting/
+              - listitem [ref=f76e176]:
+                - link "System Status" [ref=f76e177] [cursor=pointer]:
+                  - /url: /system-status/
+          - generic [ref=f76e178]:
+            - heading "Account" [level=3] [ref=f76e179]
+            - list [ref=f76e180]:
+              - listitem [ref=f76e181]:
+                - link "Apple Developer" [ref=f76e182] [cursor=pointer]:
+                  - /url: /account/
+              - listitem [ref=f76e183]:
+                - link "App Store Connect" [ref=f76e184] [cursor=pointer]:
+                  - /url: https://appstoreconnect.apple.com/
+              - listitem [ref=f76e185]:
+                - link "Certificates, IDs, & Profiles" [ref=f76e186] [cursor=pointer]:
+                  - /url: /account/ios/certificate/
+              - listitem [ref=f76e187]:
+                - link "Feedback Assistant" [ref=f76e188] [cursor=pointer]:
+                  - /url: https://feedbackassistant.apple.com/
+        - generic [ref=f76e189]:
+          - generic [ref=f76e190]:
+            - heading "Programs" [level=3] [ref=f76e191]
+            - list [ref=f76e192]:
+              - listitem [ref=f76e193]:
+                - link "Apple Developer Program" [ref=f76e194] [cursor=pointer]:
+                  - /url: /programs/
+              - listitem [ref=f76e195]:
+                - link "Apple Developer Enterprise Program" [ref=f76e196] [cursor=pointer]:
+                  - /url: /programs/enterprise/
+              - listitem [ref=f76e197]:
+                - link "App Store Small Business Program" [ref=f76e198] [cursor=pointer]:
+                  - /url: /app-store/small-business-program/
+              - listitem [ref=f76e199]:
+                - link "MFi Program" [ref=f76e200] [cursor=pointer]:
+                  - /url: https://mfi.apple.com/
+              - listitem [ref=f76e201]:
+                - link "News Partner Program" [ref=f76e202] [cursor=pointer]:
+                  - /url: /programs/news-partner/
+              - listitem [ref=f76e203]:
+                - link "Video Partner Program" [ref=f76e204] [cursor=pointer]:
+                  - /url: /programs/video-partner/
+              - listitem [ref=f76e205]:
+                - link "Security Bounty Program" [ref=f76e206] [cursor=pointer]:
+                  - /url: /security-bounty/
+              - listitem [ref=f76e207]:
+                - link "Security Research Device Program" [ref=f76e208] [cursor=pointer]:
+                  - /url: /programs/security-research-device/
+          - generic [ref=f76e209]:
+            - heading "Events" [level=3] [ref=f76e210]
+            - list [ref=f76e211]:
+              - listitem [ref=f76e212]:
+                - link "Meet with Apple" [ref=f76e213] [cursor=pointer]:
+                  - /url: /events/
+              - listitem [ref=f76e214]:
+                - link "Apple Developer Centers" [ref=f76e215] [cursor=pointer]:
+                  - /url: /events/developer-centers/
+              - listitem [ref=f76e216]:
+                - link "App Store Awards" [ref=f76e217] [cursor=pointer]:
+                  - /url: /app-store/app-store-awards/
+              - listitem [ref=f76e218]:
+                - link "Apple Design Awards" [ref=f76e219] [cursor=pointer]:
+                  - /url: /design/awards/
+              - listitem [ref=f76e220]:
+                - link "Apple Developer Academies" [ref=f76e221] [cursor=pointer]:
+                  - /url: /academies/
+              - listitem [ref=f76e222]:
+                - link "WWDC" [ref=f76e223] [cursor=pointer]:
+                  - /url: /wwdc/
+    - generic [ref=f76e224]:
+      - generic [ref=f76e225]:
+        - generic [ref=f76e226]:
+          - text: To submit feedback on documentation, visit
+          - link "Feedback Assistant" [ref=f76e227] [cursor=pointer]:
+            - /url: applefeedback://new?form_identifier=developertools.fba&answers%5B%3Aarea%5D=seedADC%3Adevpubs&answers%5B%3Adoc_type_req%5D=Technology%20Documentation&answers%5B%3Adocumentation_link_req%5D=https%3A%2F%2Fdeveloper.apple.com%2F
+          - text: .
+        - radiogroup "Select a color scheme preference" [ref=f76e229]:
+          - generic [ref=f76e231]:
+            - radio "Light" [ref=f76e232]
+            - generic [ref=f76e233]: Light
+          - generic [ref=f76e234]:
+            - radio "Dark" [ref=f76e235]
+            - generic [ref=f76e236]: Dark
+          - generic [ref=f76e237]:
+            - radio "Auto" [checked] [ref=f76e238]
+            - generic [ref=f76e239]: Auto
+      - generic [ref=f76e240]:
+        - generic [ref=f76e241]:
+          - text: Copyright © 2026
+          - link "Apple Inc." [ref=f76e242] [cursor=pointer]:
+            - /url: https://www.apple.com
+          - text: All rights reserved.
+        - generic [ref=f76e243]:
+          - link "Terms of Use" [ref=f76e244] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/internet-services/terms/site.html
+          - link "Privacy Policy" [ref=f76e245] [cursor=pointer]:
+            - /url: https://www.apple.com/legal/privacy/
+          - link "Agreements and Guidelines" [ref=f76e246] [cursor=pointer]:
+            - /url: /support/terms/

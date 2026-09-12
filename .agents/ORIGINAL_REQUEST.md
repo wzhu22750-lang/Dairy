@@ -46,3 +46,44 @@ Guarantee that all non-UI domains remain 100% intact and functional:
 - [ ] Interactive elements (cards, buttons, rows) exhibit iOS spring scale-down feedback rather than Material ripple effects.
 - [ ] Settings screen renders strictly as an Inset Grouped list with indented dividers and squircle icons.
 - [ ] Timeline screen displays collapsible large title and segmented filters.
+
+## Follow-up — 2026-09-06T18:57:17+08:00
+
+Continue and complete the Apple Human Interface Guidelines (HIG) architectural refactoring of the Android Jetpack Compose diary application (`com.example.inkpaperdiary`).
+
+Working directory: `/Users/kuangqie/Documents/VibeCoding/日记本`
+Integrity mode: development
+
+## Context & Current State
+- **Milestone 1 (DONE & VERIFIED)**: Core iOS primitives (`AppleMaterial`, `IosTouchPhysics`, `IosListComponents`, `IosSegmentedControl`, `PaperCard`) are implemented and passed test suites.
+- **Architectural Plan (`PROJECT.md`)**: Fully detailed in workspace.
+
+## Remaining Requirements
+
+### R1. Root Navigation Architecture & Collapsible Large Title (M2)
+- Complete `IosTabBar` 4-tab bottom navigation (`Journal`, `Calendar`, `Memories`, `Settings`) with 93% translucency and hairline top border.
+- Integrate `IosLargeTitleTopBar` and `IosLargeTitleScaffold` across root screens (34sp Bold title transitioning to centered 17sp SemiBold title upon scroll).
+- Complete 2-tier root navigation in `AppNavigation.kt` (4 tabs at root + pushed modals).
+- Eliminate all Material 3 FABs and top-right 3-dot overflow menus (`Icons.Default.MoreVert`).
+
+### R2. Screen Layout & Component Overhaul (M3 - M5)
+- **TimelineScreen**: Apple Journal-style stream with segmented control filters, spring-press cards, top-right compose action, contextual action sheets.
+- **SettingsScreen**: 4 Inset Grouped sections (`IosListSection`, `IosListRow`) with squircle category icons, indented dividers, and `IosModalDialog`.
+- **EditorScreen**: Clean iOS navigation bar with Cancel/Done text actions, inline capsule date/time picker pill, and modal sheets.
+- **Secondary Screens**: Polish `CalendarScreen`, `OnThisDayScreen`, `SearchScreen`, `StatsScreen`, `TrashScreen` with iOS headers and spring touch physics.
+
+### R3. Business Logic Preservation & Zero Regression (M6)
+- Maintain 100% functionality and zero regression across Room database DAOs, security/PIN cipher, and Supabase cloud sync.
+- Pass `./gradlew assembleDebug` and all unit test suites.
+
+## Acceptance Criteria
+
+### Build & Verification
+- [ ] `./gradlew test` and `./gradlew assembleDebug` compile successfully with 0 errors.
+- [ ] Non-UI business domains (Room, Sync, Security) remain completely functional without regressions.
+
+### Layout & HIG Fidelity
+- [ ] No Android FAB or 3-dot overflow menus exist on primary user journeys.
+- [ ] Primary navigation operates smoothly across the 4 root tabs via `IosTabBar`.
+- [ ] Settings screen renders strictly as an Inset Grouped list with indented dividers and squircle icons.
+- [ ] Timeline screen displays collapsible large title and segmented filters.
