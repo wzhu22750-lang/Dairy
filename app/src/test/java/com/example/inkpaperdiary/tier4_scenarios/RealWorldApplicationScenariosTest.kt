@@ -12,6 +12,8 @@ import com.example.inkpaperdiary.domain.model.Weather
 import com.example.inkpaperdiary.ui.navigation.AppDestination
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue

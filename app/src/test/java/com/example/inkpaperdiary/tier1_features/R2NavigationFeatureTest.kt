@@ -6,6 +6,10 @@ import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.ui.navigation.AppDestination
 import com.example.inkpaperdiary.ui.navigation.IosTab
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+
+import org.junit.Assert.assertSame
+
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue

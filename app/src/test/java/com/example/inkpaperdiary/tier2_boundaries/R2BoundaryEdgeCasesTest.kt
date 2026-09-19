@@ -2,6 +2,8 @@ package com.example.inkpaperdiary.tier2_boundaries
 
 import com.example.inkpaperdiary.ui.navigation.AppDestination
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
