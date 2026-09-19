@@ -4,10 +4,14 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.inkpaperdiary.core.designsystem.ReaderFont
+import com.example.inkpaperdiary.core.designsystem.ReadingSettings
+import com.example.inkpaperdiary.core.designsystem.ThemeMode
 import com.example.inkpaperdiary.core.designsystem.components.PaperPattern
 import com.example.inkpaperdiary.core.security.PinCipher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
@@ -25,6 +29,13 @@ class SettingsRepository(private val context: Context) {
         val KEY_PAPER_PATTERN = stringPreferencesKey("paper_pattern")
         val KEY_AUTO_SYNC_ENABLED = booleanPreferencesKey("auto_sync_enabled")
         val KEY_LAST_SYNC_TIME = longPreferencesKey("last_sync_timestamp")
+
+        // ---- 阅读排版（Dairy 2.0）----
+        val KEY_READER_FONT = stringPreferencesKey("reader_font")
+        val KEY_READER_FONT_SCALE = floatPreferencesKey("reader_font_scale")
+        val KEY_READER_LINE_SPACING = floatPreferencesKey("reader_line_spacing")
+        val KEY_READER_PAGE_WIDTH = floatPreferencesKey("reader_page_width")
+        val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
     val supabaseUrl: Flow<String> = context.dataStore.data.safeCatch().map { it[KEY_SUPABASE_URL] ?: "" }
@@ -39,6 +50,52 @@ class SettingsRepository(private val context: Context) {
     }
     val autoSyncEnabled: Flow<Boolean> = context.dataStore.data.safeCatch().map { it[KEY_AUTO_SYNC_ENABLED] ?: false }
     val lastSyncTime: Flow<Long> = context.dataStore.data.safeCatch().map { it[KEY_LAST_SYNC_TIME] ?: 0L }
+
+    // ---- 阅读排版 ----
+    val readerFont: Flow<ReaderFont> = context.dataStore.data.safeCatch().map {
+        val name = it[KEY_READER_FONT] ?: ReaderFont.SERIF.name
+        runCatching { ReaderFont.valueOf(name) }.getOrDefault(ReaderFont.SERIF)
+    }
+    val readerFontScale: Flow<Float> = context.dataStore.data.safeCatch().map {
+        (it[KEY_READER_FONT_SCALE] ?: 1f).coerceIn(0.8f, 1.4f)
+    }
+    val readerLineSpacing: Flow<Float> = context.dataStore.data.safeCatch().map {
+        (it[KEY_READER_LINE_SPACING] ?: 1.75f).coerceIn(1.4f, 2.2f)
+    }
+    val readerPageWidth: Flow<Float> = context.dataStore.data.safeCatch().map {
+        (it[KEY_READER_PAGE_WIDTH] ?: 1f).coerceIn(0.75f, 1f)
+    }
+    val themeMode: Flow<ThemeMode> = context.dataStore.data.safeCatch().map {
+        val name = it[KEY_THEME_MODE] ?: ThemeMode.SYSTEM.name
+        runCatching { ThemeMode.valueOf(name) }.getOrDefault(ThemeMode.SYSTEM)
+    }
+
+    /** 聚合的阅读排版设置，供主题与阅读页消费。 */
+    val readingSettings: Flow<ReadingSettings> = combine(
+        readerFont, readerFontScale, readerLineSpacing, readerPageWidth, themeMode
+    ) { font, scale, spacing, width, mode ->
+        ReadingSettings(font = font, fontScale = scale, lineSpacing = spacing, pageWidth = width, themeMode = mode)
+    }
+
+    suspend fun setReaderFont(font: ReaderFont) {
+        context.dataStore.edit { it[KEY_READER_FONT] = font.name }
+    }
+
+    suspend fun setReaderFontScale(scale: Float) {
+        context.dataStore.edit { it[KEY_READER_FONT_SCALE] = scale.coerceIn(0.8f, 1.4f) }
+    }
+
+    suspend fun setReaderLineSpacing(spacing: Float) {
+        context.dataStore.edit { it[KEY_READER_LINE_SPACING] = spacing.coerceIn(1.4f, 2.2f) }
+    }
+
+    suspend fun setReaderPageWidth(width: Float) {
+        context.dataStore.edit { it[KEY_READER_PAGE_WIDTH] = width.coerceIn(0.75f, 1f) }
+    }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { it[KEY_THEME_MODE] = mode.name }
+    }
 
     suspend fun saveSupabaseConfig(url: String, anonKey: String) {
         context.dataStore.edit { prefs ->

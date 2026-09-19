@@ -3,122 +3,125 @@ package com.example.inkpaperdiary.core.designsystem
 import androidx.compose.ui.graphics.Color
 
 /**
- * 极简黑白与现代毛玻璃色彩系统 (iOS Minimalist Monochrome & Frosted Glass Spec)
+ * Dairy Design System 2.0 — E-ink 纸张色彩系统 (Kindle-inspired Paper & Ink Palette)
  *
  * 核心审美：
- * 1. 极致黑白与高灰阶梯：去除高饱和度与彩斑，以纯黑、纯白与精细灰阶建构层级秩序。
- * 2. 现代毛玻璃半透明性：85%~93% 空间透光层级，配合 0.5dp 细发丝边框与柔和环境弥散阴影。
- * 3. 完美兼容 iOS 7 至今的扁平化空间通透感。
+ * 1. 纸张即界面：页面背景就是一张纸，没有卡片、没有毛玻璃、没有投影分层。
+ * 2. 暖色调黑纸白字：浅色为纸张白上写墨字，深色为柔和黑上写暖白，像一台夜间背光柔和的阅读器。
+ * 3. 零饱和度：全应用只存在黑、白、灰与发丝线，唯一的"颜色"是墨的浓淡。
+ */
+object InkPalette {
+    // -----------------------------------------------------------
+    // 浅色模式：纸张白 (Day Paper)
+    // -----------------------------------------------------------
+    val PaperLight = Color(0xFFFBFAF7)          // 纸张白：主背景（暖白，非冷灰）
+    val PaperRaisedLight = Color(0xFFFFFFFF)    // 浮层/弹层白：稍亮于主背景
+    val WashLight = Color(0xFFF0EEE8)           // 淡墨晕染：选中底、输入填充
+    val InkLight = Color(0xFF1D1C1A)            // 墨字：主标题与正文
+    val InkSoftLight = Color(0xFF6E6B64)        // 淡墨：次级文字
+    val InkFaintLight = Color(0xFFA09D95)       // 极淡墨：辅助信息、占位
+    val HairlineLight = Color(0xFFE7E4DD)       // 发丝线：分割线与描边
+    val InkBarLight = Color(0xF7FBFAF7)         // 顶栏/底栏：97% 纸白（微透出滚动内容）
+
+    // -----------------------------------------------------------
+    // 深色模式：柔和黑 (Night Ink)
+    // -----------------------------------------------------------
+    val PaperDark = Color(0xFF151412)           // 柔和黑：主背景（非纯黑，保留纸感）
+    val PaperRaisedDark = Color(0xFF1E1C1A)     // 浮层黑：稍亮于主背景
+    val WashDark = Color(0xFF232120)            // 夜间晕染：选中底、输入填充
+    val InkDark = Color(0xFFE6E3DB)             // 暖白字：主标题与正文
+    val InkSoftDark = Color(0xFF9B988F)         // 淡暖白：次级文字
+    val InkFaintDark = Color(0xFF6C6961)        // 极淡暖白：辅助信息、占位
+    val HairlineDark = Color(0xFF2C2A27)        // 夜间发丝线
+    val InkBarDark = Color(0xF7151412)          // 顶栏/底栏：97% 柔和黑
+
+    // 破坏性操作：朱砂红（全应用唯一的彩色，仅用于删除）
+    val Cinnabar = Color(0xFFB3432B)
+}
+
+/**
+ * 语义化墨阶：按"墨的浓淡"组织的前景色，供正文字层级直接取用。
+ */
+object InkTones {
+    fun primary(isDark: Boolean) = if (isDark) InkPalette.InkDark else InkPalette.InkLight
+    fun secondary(isDark: Boolean) = if (isDark) InkPalette.InkSoftDark else InkPalette.InkSoftLight
+    fun tertiary(isDark: Boolean) = if (isDark) InkPalette.InkFaintDark else InkPalette.InkFaintLight
+    fun paper(isDark: Boolean) = if (isDark) InkPalette.PaperDark else InkPalette.PaperLight
+    fun raised(isDark: Boolean) = if (isDark) InkPalette.PaperRaisedDark else InkPalette.PaperRaisedLight
+    fun wash(isDark: Boolean) = if (isDark) InkPalette.WashDark else InkPalette.WashLight
+    fun hairline(isDark: Boolean) = if (isDark) InkPalette.HairlineDark else InkPalette.HairlineLight
+}
+
+/**
+ * 兼容别名层：旧代码仍引用 PaperColors 的成员名；
+ * 值已全部重定向到 E-ink 纸张色板，Phase 7 清理时移除本对象。
  */
 object PaperColors {
-    // -----------------------------------------------------------
-    // 极简黑白核心基准色 (Minimalist Monochrome Core)
-    // -----------------------------------------------------------
-    val MonoBlack = Color(0xFF000000)               // 纯黑：主标题、核心强调、主操作
-    val MonoWhite = Color(0xFFFFFFFF)               // 纯白：浅色卡片底色、深色文字
+    // 灰阶重定向
+    val MonoBlack get() = InkPalette.InkLight
+    val MonoWhite get() = InkPalette.PaperLight
+    val MonoGray50 get() = InkPalette.PaperLight
+    val MonoGray100 get() = InkPalette.PaperLight
+    val MonoGray200 get() = InkPalette.HairlineLight
+    val MonoGray300 get() = InkPalette.HairlineLight
+    val MonoGray400 get() = InkPalette.InkFaintLight
+    val MonoGray500 get() = InkPalette.InkSoftLight
+    val MonoGray600 get() = InkPalette.InkSoftLight
+    val MonoGray700 get() = InkPalette.InkSoftDark
+    val MonoGray800 get() = InkPalette.WashDark
+    val MonoGray900 get() = InkPalette.PaperRaisedDark
+    val MonoBlackBg get() = InkPalette.PaperDark
 
-    // 细致灰阶层级 (Apple HIG Grayscale Scale)
-    val MonoGray50 = Color(0xFFF9FAFB)
-    val MonoGray100 = Color(0xFFF2F2F7)             // iOS 浅色系统成组背景 (System Grouped Background)
-    val MonoGray200 = Color(0xFFE5E5EA)             // 细分隔线、浅色填充、未激活描边
-    val MonoGray300 = Color(0xFFD1D1D6)             // 辅助线条
-    val MonoGray400 = Color(0xFFC7C7CC)             // 占位提示文字
-    val MonoGray500 = Color(0xFF8E8E93)             // iOS 次要标签文字 (Secondary Label)
-    val MonoGray600 = Color(0xFF636366)             // 次级正文
-    val MonoGray700 = Color(0xFF3A3A3C)             // 深色分隔线
-    val MonoGray800 = Color(0xFF2C2C2E)             // 深色次级背景 (Secondary Grouped Dark)
-    val MonoGray900 = Color(0xFF1C1C1E)             // iOS 深色卡片背景 (Elevated Dark Surface)
-    val MonoBlackBg = Color(0xFF000000)             // iOS 深色主画布 (AMOLED True Black)
+    // 旧墨名重定向
+    val InkBlack get() = InkPalette.InkLight
+    val MediumInk get() = InkPalette.InkSoftLight
+    val LightInk get() = InkPalette.InkSoftLight
+    val GhostInk get() = InkPalette.InkFaintLight
+    val InkWash get() = InkPalette.WashLight
+    val InkWashTint get() = InkPalette.WashLight
+    val InkWashBorder get() = InkPalette.HairlineLight
+    val XuanPaper get() = InkPalette.PaperLight
+    val AgedPaper get() = InkPalette.PaperRaisedLight
 
-    // -----------------------------------------------------------
-    // 现代毛玻璃半透明体系 (Frosted Glass Translucency)
-    // -----------------------------------------------------------
-    // 浅色模式毛玻璃
-    val GlassLight = Color(0xD9FFFFFF)              // 85% 悬浮卡片毛玻璃
-    val GlassLightBar = Color(0xEEF2F2F7)           // 93% 顶栏与底栏毛玻璃
-    val GlassLightFill = Color(0x0A000000)          // 4% 超轻黑羽化填充
-    val GlassBorderLight = Color(0x14000000)        // 8% 细发丝描边 (0.5dp)
+    // 旧强调色：一律收敛为墨色
+    val RuCeladon get() = InkPalette.InkLight
+    val CeladonPale get() = InkPalette.WashLight
+    val SealVermillion get() = InkPalette.InkLight
+    val SealVermillionLight get() = InkPalette.WashLight
+    val SealRed get() = InkPalette.InkLight
+    val SealRedDark get() = InkPalette.InkLight
+    val SealRedLight get() = InkPalette.WashLight
 
-    // 深色模式毛玻璃
-    val GlassDark = Color(0xD91C1C1E)               // 85% 深色卡片毛玻璃
-    val GlassDarkBar = Color(0xEE000000)            // 93% 深色顶底栏毛玻璃
-    val GlassDarkFill = Color(0x14FFFFFF)           // 8% 深色微光填充
-    val GlassBorderDark = Color(0x2EFFFFFF)         // 18% 深色高光细边框 (0.5dp)
+    // 旧 Slate 阶
+    val SlateCharcoal get() = InkPalette.InkLight
+    val SlateGraphite get() = InkPalette.InkSoftLight
+    val SlateSteel get() = InkPalette.InkSoftLight
+    val SlateMedium get() = InkPalette.InkSoftLight
+    val SlateSilver get() = InkPalette.InkFaintLight
+    val SlateLight get() = InkPalette.InkFaintLight
+    val SlateMuted get() = InkPalette.HairlineLight
 
-    // -----------------------------------------------------------
-    // 单色调雅致阶梯 (用于心情/天气符号在极简黑白中的优雅区分)
-    // -----------------------------------------------------------
-    val SlateCharcoal = Color(0xFF1C1C1E)           // 炭墨深灰
-    val SlateGraphite = Color(0xFF3A3A3C)           // 石墨灰
-    val SlateSteel = Color(0xFF48484A)              // 冷钢灰
-    val SlateMedium = Color(0xFF636366)             // 烟灰
-    val SlateSilver = Color(0xFF8E8E93)             // 银灰
-    val SlateLight = Color(0xFFAEAEB2)              // 浅灰
-    val SlateMuted = Color(0xFFC7C7CC)              // 雾灰
+    // 旧语义别名
+    val LightParchmentBg get() = InkPalette.PaperLight
+    val LightPaperSurface get() = InkPalette.PaperLight
+    val LightPaperCard get() = InkPalette.PaperRaisedLight
+    val LightPaperBorder get() = InkPalette.HairlineLight
+    val LightPaperDottedGrid get() = InkPalette.HairlineLight
+    val LightPaperRuledLine get() = InkPalette.HairlineLight
+    val LightInkPrimary get() = InkPalette.InkLight
+    val LightInkSecondary get() = InkPalette.InkSoftLight
+    val LightInkTertiary get() = InkPalette.InkFaintLight
 
-    // -----------------------------------------------------------
-    // 兼容性语义别名 (平滑兼容老组件引用，全面转为极简黑白)
-    // -----------------------------------------------------------
-    val XuanPaper = MonoGray100                     // 浅色主背景转为 iOS Grouped Background
-    val AgedPaper = MonoWhite                       // 浅色卡片转为纯白纸面
-    val InkWashTint = MonoGray200                   // 浅灰填充
-    val InkWashBorder = MonoGray200                 // 细分割线
-
-    val InkBlack = MonoBlack                        // 标题主文字 -> 纯黑
-    val MediumInk = MonoGray600                     // 次级文字
-    val LightInk = MonoGray500                      // 辅助文字
-    val GhostInk = MonoGray400                      // 占位底纹
-    val InkWash = MonoGray200
-
-    // 标志色映射为纯粹的黑白基调
-    val RuCeladon = MonoBlack                       // 原天青主强调色 -> 纯黑/高对比黑
-    val CeladonPale = MonoGray200                   // 选中态淡底
-    val SealVermillion = MonoBlack                  // 印章红 -> 极简墨黑胶囊
-    val SealVermillionLight = MonoGray200
-    val Ochre = SlateSteel
-    val PineSmokeIndigo = SlateCharcoal
-    val BambooMoss = SlateGraphite
-
-    // 浅色模式语义别名
-    val LightParchmentBg = MonoGray100
-    val LightPaperSurface = MonoWhite
-    val LightPaperCard = MonoWhite
-    val LightPaperBorder = GlassBorderLight
-    val LightPaperDottedGrid = MonoGray300
-    val LightPaperRuledLine = MonoGray200
-
-    val LightInkPrimary = MonoBlack
-    val LightInkSecondary = MonoGray500
-    val LightInkTertiary = MonoGray400
-
-    val SealRed = MonoBlack
-    val SealRedDark = MonoBlack
-    val SealRedLight = MonoGray200
-
-    val VintageOlive = SlateGraphite
-    val VintageOliveLight = MonoGray200
-    val VintageAmber = SlateSteel
-    val VintageAmberLight = MonoGray200
-    val VintageNavy = SlateCharcoal
-    val VintageNavyLight = MonoGray200
-    val VintageRose = SlateMedium
-    val VintageRoseLight = MonoGray200
-    val VintageTeal = SlateSteel
-    val VintageTealLight = MonoGray200
-
-    // 深色模式语义别名
-    val DarkParchmentBg = MonoBlackBg               // 纯黑 AMOLED
-    val DarkPaperSurface = MonoGray900              // 深灰卡片
-    val DarkPaperCard = MonoGray900
-    val DarkPaperBorder = GlassBorderDark
-    val DarkPaperDottedGrid = MonoGray700
-    val DarkPaperRuledLine = MonoGray700
-
-    val DarkInkPrimary = MonoWhite
-    val DarkInkSecondary = MonoGray500
-    val DarkInkTertiary = MonoGray600
-
-    val DarkSealRed = MonoWhite
-    val DarkSealRedBg = MonoGray800
-    val DarkRuCeladon = MonoWhite
+    val DarkParchmentBg get() = InkPalette.PaperDark
+    val DarkPaperSurface get() = InkPalette.PaperRaisedDark
+    val DarkPaperCard get() = InkPalette.PaperRaisedDark
+    val DarkPaperBorder get() = InkPalette.HairlineDark
+    val DarkPaperDottedGrid get() = InkPalette.HairlineDark
+    val DarkPaperRuledLine get() = InkPalette.HairlineDark
+    val DarkInkPrimary get() = InkPalette.InkDark
+    val DarkInkSecondary get() = InkPalette.InkSoftDark
+    val DarkInkTertiary get() = InkPalette.InkFaintDark
+    val DarkSealRed get() = InkPalette.InkDark
+    val DarkSealRedBg get() = InkPalette.WashDark
+    val DarkRuCeladon get() = InkPalette.InkDark
 }

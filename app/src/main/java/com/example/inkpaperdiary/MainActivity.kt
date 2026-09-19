@@ -68,8 +68,15 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             val appLockActive by settingsRepository.appLockEnabled.collectAsState(initial = false)
+            val readingSettings by settingsRepository.readingSettings.collectAsState(initial = com.example.inkpaperdiary.core.designsystem.ReadingSettings())
 
-            PaperDiaryTheme {
+            val darkTheme = when (readingSettings.themeMode) {
+                com.example.inkpaperdiary.core.designsystem.ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+                com.example.inkpaperdiary.core.designsystem.ThemeMode.LIGHT -> false
+                com.example.inkpaperdiary.core.designsystem.ThemeMode.DARK -> true
+            }
+
+            PaperDiaryTheme(darkTheme = darkTheme, reading = readingSettings) {
                 AppNavigation(
                     diaryRepository = diaryRepository,
                     settingsRepository = settingsRepository,
