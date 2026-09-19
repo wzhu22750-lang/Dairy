@@ -98,23 +98,26 @@ class DraftPersistenceScenariosTest {
         scheduler.runCurrent()
     }
 
-    /** 情况1：输入内容 → 返回 → 再进入（返回键只保存草稿，不打扰用户） */
+    /** 情况1：输入内容 → 返回 → 再进入（离开即转正，回到时间线立刻可见） */
     @Test
     fun `情况1_输入后返回再进入_内容完整找回`() {
         val vm = relaunch()
         scheduler.runCurrent()
         vm.updateTitle("情况一")
         vm.updateContent("写完这段就退出，回来必须还在。")
-        vm.flushDraftNow()
+        vm.finishDiary { } // 返回键：离开即转正
         scheduler.runCurrent()
 
-        val reopened = relaunch()
+        // 内容已在正式日记里（时间线/阅读页直接可见）
+        val diary = diaryStore.diaries.values.single()
+        assertEquals("情况一", diary.title)
+        assertEquals("写完这段就退出，回来必须还在。", diary.contentMarkdown)
+
+        // 再次打开同一篇：编辑器直接载入已保存内容，无恢复提示
+        val reopened = relaunch(diaryId = diary.id)
         scheduler.runCurrent()
-        val pending = reopened.uiState.value.pendingDraft
-        assertNotNull(pending)
-        reopened.continuePendingDraft()
+        assertNull(reopened.uiState.value.pendingDraft)
         assertEquals("写完这段就退出，回来必须还在。", reopened.uiState.value.contentMarkdown)
-        assertEquals("情况一", reopened.uiState.value.title)
     }
 
     /** 情况2：输入内容 → 杀掉 App → 重启（进程死亡，防抖自动保存兜底） */
@@ -152,20 +155,22 @@ class DraftPersistenceScenariosTest {
         assertEquals("手机重启后草稿仍在磁盘上。", reopened.uiState.value.contentMarkdown)
     }
 
-    /** 情况4：输入内容 → 切换深色模式（Activity 重建，编辑器实例全部重建） */
+    /** 情况4：输入内容 → 切换深色模式（Activity 重建，onStop 已先行转正） */
     @Test
     fun `情况4_切换深色模式Activity重建_内容完整找回`() {
         val vm = relaunch()
         scheduler.runCurrent()
         vm.updateContent("深色模式切换导致重建。")
-        vm.flushDraftNow() // 重建前的 onStop 兜底落盘
+        vm.promoteNow() // 重建前的 onStop 兜底转正
         scheduler.runCurrent()
 
-        val recreated = relaunch()
+        // 重建后内容已在正式日记中，不会丢失
+        assertEquals("深色模式切换导致重建。", diaryStore.diaries.values.single().contentMarkdown)
+
+        val reopened = relaunch(diaryId = diaryStore.diaries.keys.single())
         scheduler.runCurrent()
-        assertNotNull(recreated.uiState.value.pendingDraft)
-        recreated.continuePendingDraft()
-        assertEquals("深色模式切换导致重建。", recreated.uiState.value.contentMarkdown)
+        assertNull(reopened.uiState.value.pendingDraft)
+        assertEquals("深色模式切换导致重建。", reopened.uiState.value.contentMarkdown)
     }
 
     /** 情况5：输入大量文字（防抖落盘与恢复都必须无损） */
@@ -214,9 +219,9 @@ class DraftPersistenceScenariosTest {
         assertEquals(0, reopened.uiState.value.attachments.size)
     }
 
-    /** 编辑既有日记时的异常退出：草稿遮蔽正式数据，但绝不覆盖，用户可选还原 */
+    /** 编辑既有日记：写作期间改动只进草稿（进程死亡安全网），离开时立即转正更新正式日记 */
     @Test
-    fun `编辑既有日记异常退出_草稿与正式数据互不污染`() {
+    fun `编辑既有日记_写作中改稿在草稿_离开即转正`() {
         val diaryId = "diary-x"
         diaryStore.diaries[diaryId] = Diary(
             id = diaryId, title = "旧标题", contentMarkdown = "旧内容",
@@ -229,24 +234,22 @@ class DraftPersistenceScenariosTest {
         vm.updateContent("新内容")
         advance(EditorViewModel.DRAFT_AUTOSAVE_DELAY_MS)
 
-        // 正式日记完全未被改动
-        assertEquals("旧标题", diaryStore.diaries.getValue(diaryId).title)
-        assertEquals("旧内容", diaryStore.diaries.getValue(diaryId).contentMarkdown)
+        // 写作期间：草稿持有最新改动，正式日记暂未变（进程死亡时可恢复）
+        assertEquals("新内容", diskStore.drafts.values.single().contentMarkdown)
 
+        // 返回离开：立即转正，正式日记更新，草稿清除
+        vm.finishDiary { }
+        scheduler.runCurrent()
+        assertTrue(diskStore.drafts.isEmpty())
+        assertEquals("新标题", diaryStore.diaries.getValue(diaryId).title)
+        assertEquals("新内容", diaryStore.diaries.getValue(diaryId).contentMarkdown)
+
+        // 重新打开：直接看到已保存的新内容，无恢复提示
         val reopened = relaunch(diaryId = diaryId)
         scheduler.runCurrent()
-        val pending = reopened.uiState.value.pendingDraft
-        assertNotNull(pending)
-        assertEquals("新内容", pending!!.contentMarkdown)
-        assertEquals("旧标题", reopened.uiState.value.title) // 背后仍是正式内容
-        reopened.continuePendingDraft()
+        assertNull(reopened.uiState.value.pendingDraft)
         assertEquals("新标题", reopened.uiState.value.title)
-
-        // 完成转正：正式数据更新，草稿清除
-        reopened.finishDiary { }
-        scheduler.runCurrent()
-        assertEquals("新标题", diaryStore.diaries.getValue(diaryId).title)
-        assertTrue(diskStore.drafts.isEmpty())
+        assertEquals("新内容", reopened.uiState.value.contentMarkdown)
     }
 
     /** 恢复提示被"暂不处理"后再次进入，草稿仍在（不丢、不强制） */

@@ -77,15 +77,14 @@ fun EditorScreen(
     var tagInputText by remember { mutableStateOf("") }
     var locationInputText by remember { mutableStateOf("") }
 
-    // 系统返回键：保存草稿后离开（草稿已由自动保存持续落盘，这里只是兜底 flush）
+    // 系统返回键：离开即转正——非空白内容立即写进正式日记，回到时间线立刻可见
     BackHandler {
-        viewModel.flushDraftNow()
-        onNavigateBack()
+        viewModel.finishDiary(onNavigateBack)
     }
 
-    // 进入后台（Home 键/切应用/深色模式切换前的 onStop）：立即落盘，不等防抖
+    // 进入后台（Home 键/切应用/深色模式切换前的 onStop）：立即转正，不等防抖
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
-        viewModel.flushDraftNow()
+        viewModel.promoteNow()
     }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -127,10 +126,7 @@ fun EditorScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IosNavBackButton(
-                onNavigateBack = {
-                    viewModel.flushDraftNow()
-                    onNavigateBack()
-                },
+                onNavigateBack = { viewModel.finishDiary(onNavigateBack) },
                 tint = MaterialTheme.colorScheme.onBackground
             )
 

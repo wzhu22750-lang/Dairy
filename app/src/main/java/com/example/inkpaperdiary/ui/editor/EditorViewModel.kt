@@ -96,11 +96,13 @@ private fun DiaryDraft.toEditorState(): EditorUiState = EditorUiState(
 /**
  * 数字纸张编辑器 ViewModel。
  *
- * 草稿持久化系统的核心：写作即保存，保存的是"草稿"而非正式日记。
- * - 落笔后防抖自动写入 Room `drafts` 表（不污染正式日记，时间线不受干扰）；
+ * 草稿持久化系统：写作即保存，离开即入册。
+ * - 落笔后防抖自动写入 Room `drafts` 表（进程死亡/崩溃的安全网）；
  * - 顶栏呈现一行安静的保存状态；
- * - 返回/后台/Activity 重建/进程死亡后，草稿均可恢复；
- * - 点"完成"才把草稿转正为正式日记（或还原为已保存版本）。
+ * - 任何离开编辑器的方式（返回键、"完成"、切后台）都会把非空白内容立即转正进正式日记，
+ *   用户回到时间线/阅读页立刻能看到，绝不出现"写了却不在"；
+ * - 只有进程死亡/崩溃等异常导致转正没来得及发生时，草稿才会留存，
+ *   重新进入编辑器时弹出恢复提示，把内容交还给用户决定。
  */
 @OptIn(FlowPreview::class)
 class EditorViewModel(
@@ -125,9 +127,10 @@ class EditorViewModel(
     private val persistMutex = Mutex()
 
     private var lastPersistedPayload: DraftPayload? = null
+    private var lastPromotedPayload: DraftPayload? = null
     private var draftCreatedAt = 0L
     private var draftAlive = false      // 草稿表中是否存在本会话的草稿
-    private var sessionClosed = false   // 转正/放弃之后关闭会话，禁止再写草稿
+    private var sessionClosed = false   // 离开编辑器之后关闭会话，禁止再写草稿
 
     /** 是否为"新建日记"会话（diaryId 为空或 "new"） */
     private val isNewSession = diaryId == null || diaryId == "new"
@@ -203,6 +206,7 @@ class EditorViewModel(
         draftAlive = true
         draftCreatedAt = draft.createdTime
         lastPersistedPayload = restored.toDraftPayload()
+        lastPromotedPayload = null
     }
 
     /** 恢复提示 - 删除草稿（新建场景）：草稿与其孤儿配图一并清理，编辑器保持空白 */
@@ -325,6 +329,11 @@ class EditorViewModel(
                 return@withLock
             }
 
+            if (!draftAlive && payload == lastPromotedPayload) {
+                // 内容已转正进正式日记且无新改动：不要为已入册的内容重建草稿
+                return@withLock
+            }
+
             _uiState.update { it.copy(isSaving = true) }
             val now = clock()
             if (draftCreatedAt == 0L) draftCreatedAt = now
@@ -354,41 +363,71 @@ class EditorViewModel(
     }
 
     /**
-     * 立即落盘（不等防抖）：进入后台（onStop）、返回键退出等生命周期关口调用。
+     * 立即转正（不等防抖、不关闭会话）：进入后台（onStop）等生命周期关口调用。
+     * 非空白内容立刻写进正式日记——即使用户随后被系统杀掉进程，回到应用也能在时间线看到；
+     * 会话保持打开，用户返回后还能继续写，后续编辑会以同一 id 增量更新。
      * 运行在 autosaveScope，即使 ViewModel 随导航销毁，写入仍会完成。
      */
-    fun flushDraftNow() {
+    fun promoteNow() {
         if (sessionClosed) return
-        autosaveScope.launch { persistDraft() }
+        autosaveScope.launch { promoteLocked(closeSession = false) }
     }
 
     // ------------------------------------------------------------------
-    // 转正（完成）/ 放弃
+    // 转正（完成 / 离开）/ 放弃
     // ------------------------------------------------------------------
 
-    /** 显式完成：草稿转正为正式日记并清除草稿；空白页直接退出。 */
+    /**
+     * 离开编辑器（返回键、"完成"）：转正并关闭会话。
+     * 非空白内容写入正式日记并清除草稿；空白页直接退出、不产生记录。
+     */
     fun finishDiary(onFinished: () -> Unit) {
         viewModelScope.launch {
-            persistMutex.withLock {
-                sessionClosed = true
-                val state = _uiState.value
-                val blank = state.toDraftPayload().isBlank()
-                if (blank) {
-                    if (draftAlive) {
-                        draftStore.deleteDraft(state.id)
-                        draftAlive = false
-                    }
-                    _uiState.update { it.copy(isSaving = false, lastSavedAt = 0L) }
-                } else {
-                    _uiState.update { it.copy(isSaving = true) }
-                    diaryStore.saveDiary(state.toDiary())
-                    // 正式数据已落库，草稿使命完成
+            promoteLocked(closeSession = true)
+            onFinished()
+        }
+    }
+
+    /** 转正内核：非空白内容写入正式日记并清除草稿；空白页清理残留草稿、不产生记录。 */
+    private suspend fun promoteLocked(closeSession: Boolean) {
+        persistMutex.withLock {
+            if (closeSession) sessionClosed = true
+            val state = _uiState.value
+            if (!state.isLoaded || state.pendingDraft != null) return@withLock
+            val payload = state.toDraftPayload()
+
+            if (payload.isBlank()) {
+                // 空白页：清理会话草稿后结束，不产生任何记录
+                if (draftAlive) {
                     draftStore.deleteDraft(state.id)
                     draftAlive = false
-                    _uiState.update { it.copy(isSaving = false) }
                 }
+                lastPersistedPayload = null
+                _uiState.update { it.copy(isSaving = false, lastSavedAt = 0L) }
+                return@withLock
             }
-            onFinished()
+
+            if (!closeSession && payload == lastPromotedPayload && !draftAlive) {
+                // 会话继续时无新改动，且内容已在正式日记中
+                return@withLock
+            }
+
+            _uiState.update { it.copy(isSaving = true) }
+            val now = clock()
+            diaryStore.saveDiary(state.toDiary())
+            // 正式数据已落库，草稿使命完成
+            draftStore.deleteDraft(state.id)
+            draftAlive = false
+            lastPersistedPayload = null
+            lastPromotedPayload = payload
+            _uiState.update {
+                it.copy(
+                    isSaving = false,
+                    lastSavedAt = now,
+                    // 首次落库后记录 createdAt，后续转正不再重置创建时间
+                    createdAt = if (it.createdAt == 0L) it.entryDate else it.createdAt
+                )
+            }
         }
     }
 

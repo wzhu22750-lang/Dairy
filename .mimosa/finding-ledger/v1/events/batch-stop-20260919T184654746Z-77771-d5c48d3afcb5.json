@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260919T184654746Z-77771-d5c48d3afcb5",
+  "runId": "20260919T184654746Z-77771-d5c48d3afcb5",
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "e2cb7059662c963d93d9b82808e25b042a71ea2d",
+  "diffHash": "7ef0ae98d035af8effadcb4255afcdb77ff9b65374a2b62a6371e8dd0026d655",
+  "rulesVersion": "unavailable",
+  "sessionHash": "b2c8daa145c0806027530cfccd31698e02f45b732378d99ef206483965bbb3a3",
+  "reportRef": ".mimosa/reports/task-review-sess_0bbe0a48-726a-4809-9648-65f7818fd7f0-20260919T184654746Z-77771-d5c48d3afcb5.json",
+  "events": [],
+  "observedFindingIds": [],
+  "verifiedFiles": [
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/Color.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/scaffold/IosLargeTitleScaffold.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosListComponents.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/navigation/IosTabBar.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/IosTabBarEmpiricalChallengeTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-09-19T18:46:55.038Z"
+}

@@ -111,12 +111,12 @@ fun LockScreen(
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                // PIN 指示圆点：与 4 位密码严格一致
+                // PIN 指示圆点：位数由 ViewModel 契约驱动（与设置页一致，固定 4 位）
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    repeat(4) { index ->
+                    repeat(uiState.maxPinLength) { index ->
                         val isFilled = index < inputPin.length
                         Box(
                             modifier = Modifier

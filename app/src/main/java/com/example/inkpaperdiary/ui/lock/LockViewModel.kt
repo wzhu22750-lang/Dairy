@@ -11,14 +11,14 @@ data class LockUiState(
     val isLockEnabled: Boolean = false,
     val biometricEnabled: Boolean = false,
     val isUnlocked: Boolean = false,
-    val maxPinLength: Int = 6
+    /** PIN 固定 4 位：与设置页、锁屏圆点指示器共用同一契约 */
+    val maxPinLength: Int = 4
 )
 
 class LockViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
 
     private companion object {
-        const val MAX_PIN_LENGTH = 6
-        const val MIN_PIN_LENGTH = 4
+        const val PIN_LENGTH = 4
         const val MAX_FAILED_ATTEMPTS = 5
         const val LOCKOUT_MILLIS = 30_000L
     }
@@ -42,6 +42,7 @@ class LockViewModel(private val settingsRepository: SettingsRepository) : ViewMo
 
     private var failedAttempts = 0
     private var lockoutUntil = 0L
+    private var isVerifying = false
 
     /** 冷却剩余毫秒数（>0 表示锁定中） */
     private val _lockoutRemaining = MutableStateFlow(0L)
@@ -50,17 +51,24 @@ class LockViewModel(private val settingsRepository: SettingsRepository) : ViewMo
     fun appendPinDigit(digit: String) {
         if (_isUnlocked.value) return
         if (lockoutRemaining.value > 0L) return // 冷却中不可输入
+        if (isVerifying) return // 等待本轮验证结果，避免竞态重复验证
 
-        val updated = (_inputPin.value + digit).take(MAX_PIN_LENGTH)
+        val updated = (_inputPin.value + digit).take(PIN_LENGTH)
         _inputPin.value = updated
 
-        if (updated.length >= MIN_PIN_LENGTH) {
+        if (updated.length == PIN_LENGTH) {
+            // 输满 4 位立即验证；无论对错都给出明确结果（成功解锁 / 清空重输）
+            isVerifying = true
             viewModelScope.launch {
-                if (settingsRepository.verifyAppPin(updated)) {
-                    _isUnlocked.value = true
-                    failedAttempts = 0
-                } else if (updated.length == MAX_PIN_LENGTH) {
-                    handleMismatch()
+                try {
+                    if (settingsRepository.verifyAppPin(updated)) {
+                        _isUnlocked.value = true
+                        failedAttempts = 0
+                    } else {
+                        handleMismatch()
+                    }
+                } finally {
+                    isVerifying = false
                 }
             }
         }

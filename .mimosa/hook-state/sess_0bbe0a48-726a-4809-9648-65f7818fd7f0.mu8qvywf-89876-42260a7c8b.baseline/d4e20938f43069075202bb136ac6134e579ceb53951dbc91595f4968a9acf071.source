@@ -54,14 +54,14 @@ fun IosListSection(
         val headerText = header ?: title
         if (!headerText.isNullOrBlank()) {
             Text(
-                text = headerText.uppercase(),
-                style = PaperTypography.bodySmall.copy(
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    letterSpacing = 0.5.sp,
+                text = headerText,
+                style = PaperTypography.bodyMedium.copy(
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    letterSpacing = 0.sp,
                     fontWeight = FontWeight.Medium
                 ),
-                modifier = Modifier.padding(start = 16.dp, bottom = 6.dp)
+                modifier = Modifier.padding(start = 20.dp, bottom = 10.dp)
             )
         }
 
@@ -84,9 +84,9 @@ fun IosListSection(
                 style = PaperTypography.bodySmall.copy(
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 18.sp
+                    lineHeight = 19.sp
                 ),
-                modifier = Modifier.padding(start = 16.dp, top = 6.dp, bottom = 10.dp)
+                modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 10.dp)
             )
         }
     }
@@ -110,8 +110,9 @@ fun IosListRow(
         title = {
             Text(
                 text = title,
-                style = PaperTypography.bodyLarge.copy(
+                style = PaperTypography.titleMedium.copy(
                     fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             )
@@ -120,11 +121,12 @@ fun IosListRow(
             {
                 Text(
                     text = sub,
-                    style = PaperTypography.bodySmall.copy(
-                        fontSize = 13.sp,
+                    style = PaperTypography.bodyLarge.copy(
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
@@ -162,8 +164,8 @@ fun IosListRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = 44.dp)
-                .padding(horizontal = 16.dp, vertical = 11.dp),
+                .defaultMinSize(minHeight = 64.dp)
+                .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -206,7 +208,7 @@ fun IosListRow(
         }
 
         if (showDivider) {
-            val indentStart = if (leadingIcon != null) 56.dp else 16.dp
+            val indentStart = if (leadingIcon != null) 60.dp else 20.dp
             HorizontalDivider(
                 modifier = Modifier.padding(start = indentStart),
                 thickness = 0.5.dp,
@@ -217,7 +219,10 @@ fun IosListRow(
 }
 
 /**
- * Apple HIG Navigation Row with Chevron Disclosure
+ * Navigation Row with Chevron Disclosure
+ *
+ * 右侧当前值以灰底胶囊呈现（如主题模式的"E-Ink(墨水屏)"），
+ * 未设置值时仅显示一枚淡墨 chevron。
  */
 @Composable
 fun IosNavigationRow(
@@ -239,17 +244,21 @@ fun IosNavigationRow(
         trailing = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (!value.isNullOrBlank()) {
                     Text(
                         text = value,
-                        style = PaperTypography.bodyLarge.copy(
-                            fontSize = 15.sp,
+                        style = PaperTypography.labelMedium.copy(
+                            fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .clip(CapsuleShape)
+                            .background(InkTones.wash(isSystemInDarkTheme()))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     )
                 }
                 Icon(
@@ -370,7 +379,8 @@ fun IosSwitch(
                 .offset(x = animatedThumbOffset)
                 .size(27.dp)
                 .shadow(elevation = 2.dp, shape = CircleShape)
-                .background(Color.White, shape = CircleShape)
+                // 夜间下滑块用暖白而非纯白，与夜纸协调
+                .background(if (isDark) InkPalette.InkDark else Color.White, shape = CircleShape)
         )
     }
 }

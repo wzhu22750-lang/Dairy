@@ -72,8 +72,10 @@ class IosTabBarEmpiricalChallengeTest {
         val lightBg = AppleMaterials.barBackgroundColor(isDark = false)
         val darkBg = AppleMaterials.barBackgroundColor(isDark = true)
 
-        assertEquals("Light bar background must be 0xF7FBFAF7", Color(0xF7FBFAF7), lightBg)
-        assertEquals("Dark bar background must be 0xF7151412", Color(0xF7151412), darkBg)
+        assertEquals("Light bar background must follow InkPalette.InkBarLight",
+            com.example.inkpaperdiary.core.designsystem.InkPalette.InkBarLight, lightBg)
+        assertEquals("Dark bar background must follow InkPalette.InkBarDark",
+            com.example.inkpaperdiary.core.designsystem.InkPalette.InkBarDark, darkBg)
         assertNotEquals("Light and dark bar backgrounds must differ", lightBg, darkBg)
 
         // 两种模式都是近乎不透明的微透色

@@ -181,7 +181,7 @@ class EditorViewModelDraftTest {
     }
 
     @Test
-    fun `flushDraftNow 不等防抖立即落盘`() {
+    fun `promoteNow 不等防抖立即转正进正式日记`() {
         val vm = createViewModel()
         scheduler.runCurrent()
 
@@ -189,14 +189,24 @@ class EditorViewModelDraftTest {
         scheduler.runCurrent()
         assertTrue(draftStore.drafts.isEmpty())
 
-        vm.flushDraftNow()
+        vm.promoteNow()
         scheduler.runCurrent()
-        assertEquals("来不及等防抖的内容", draftStore.drafts.values.single().contentMarkdown)
+        assertEquals("来不及等防抖的内容", diaryStore.diaries.values.single().contentMarkdown)
+        assertTrue("转正后草稿应清除", draftStore.drafts.isEmpty())
 
-        // flush 之后防抖到点也不应重复写
-        val savesBefore = draftStore.saveCount
+        // 转正后防抖到点，不应为已入册的内容重建草稿
         advance(EditorViewModel.DRAFT_AUTOSAVE_DELAY_MS)
-        assertEquals(savesBefore, draftStore.saveCount)
+        assertTrue(draftStore.drafts.isEmpty())
+
+        // 继续写作：会话仍打开，同一 id 增量更新，不产生第二篇
+        vm.updateContent("来不及等防抖的内容\n追加一段")
+        advance(EditorViewModel.DRAFT_AUTOSAVE_DELAY_MS)
+        assertEquals(1, draftStore.drafts.size)
+
+        vm.finishDiary { }
+        scheduler.runCurrent()
+        assertEquals(1, diaryStore.diaries.size)
+        assertEquals("来不及等防抖的内容\n追加一段", diaryStore.diaries.values.single().contentMarkdown)
     }
 
     // ------------------------------------------------------------------
@@ -204,27 +214,20 @@ class EditorViewModelDraftTest {
     // ------------------------------------------------------------------
 
     @Test
-    fun `退出页面后重新进入出现恢复提示并可继续编辑`() {
+    fun `返回键离开后内容立即转正进正式日记`() {
         val vm1 = createViewModel()
         scheduler.runCurrent()
         vm1.updateTitle("旅行日记")
         vm1.updateContent("第一天：抵达大理。")
-        vm1.flushDraftNow() // 返回键路径
+        var finished = false
+        vm1.finishDiary { finished = true } // 返回键路径：离开即转正
         scheduler.runCurrent()
 
-        // 模拟旧实例销毁（退出页面）
-        val vm2 = createViewModel()
-        scheduler.runCurrent()
-
-        val pending = vm2.uiState.value.pendingDraft
-        assertNotNull("重进后应出现恢复提示", pending)
-        assertEquals("旅行日记", pending!!.title)
-        assertEquals("第一天：抵达大理。", pending.contentMarkdown)
-
-        vm2.continuePendingDraft()
-        assertEquals("旅行日记", vm2.uiState.value.title)
-        assertEquals("第一天：抵达大理。", vm2.uiState.value.contentMarkdown)
-        assertEquals(pending.updatedTime, vm2.uiState.value.lastSavedAt)
+        assertTrue(finished)
+        val diary = diaryStore.diaries.values.single()
+        assertEquals("旅行日记", diary.title)
+        assertEquals("第一天：抵达大理。", diary.contentMarkdown)
+        assertTrue("转正后不应残留草稿", draftStore.drafts.isEmpty())
     }
 
     @Test
@@ -247,18 +250,23 @@ class EditorViewModelDraftTest {
     }
 
     @Test
-    fun `Activity销毁重建后草稿仍可恢复`() {
+    fun `Activity销毁重建前内容已通过onStop转正`() {
         val vm1 = createViewModel()
         scheduler.runCurrent()
         vm1.updateTitle("配置变更")
         vm1.updateContent("切换深色模式导致 Activity 重建")
-        vm1.flushDraftNow() // onStop 兜底
+        vm1.promoteNow() // onStop 兜底转正
         scheduler.runCurrent()
 
-        val vm2 = createViewModel() // 重建后的新实例
+        // 深色模式重建：内容已在正式日记中，不会丢失
+        assertEquals("配置变更", diaryStore.diaries.values.single().title)
+        assertTrue(draftStore.drafts.isEmpty())
+
+        // 用户重新打开同一篇：编辑器直接载入已保存内容
+        val diaryId = diaryStore.diaries.keys.single()
+        val vm2 = createViewModel(diaryId = diaryId)
         scheduler.runCurrent()
-        assertNotNull(vm2.uiState.value.pendingDraft)
-        vm2.continuePendingDraft()
+        assertNull("无崩溃草稿时不应弹恢复提示", vm2.uiState.value.pendingDraft)
         assertEquals("切换深色模式导致 Activity 重建", vm2.uiState.value.contentMarkdown)
     }
 
@@ -272,8 +280,7 @@ class EditorViewModelDraftTest {
         scheduler.runCurrent()
         vm.updateTitle("完成的一页")
         vm.updateContent("正文内容")
-        vm.flushDraftNow()
-        scheduler.runCurrent()
+        advance(EditorViewModel.DRAFT_AUTOSAVE_DELAY_MS)
         assertEquals(1, draftStore.drafts.size)
 
         var finished = false
@@ -345,8 +352,7 @@ class EditorViewModelDraftTest {
         val vm = createViewModel()
         scheduler.runCurrent()
         vm.updateContent("即将被清空的内容")
-        vm.flushDraftNow()
-        scheduler.runCurrent()
+        advance(EditorViewModel.DRAFT_AUTOSAVE_DELAY_MS)
         assertEquals(1, draftStore.drafts.size)
 
         vm.updateContent("")

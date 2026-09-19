@@ -354,41 +354,49 @@ fun IosLargeTitleItem(
 ) {
     val alpha = IosLargeTitleDefaults.calculateLargeTitleAlpha(scrollOffset, scrollThresholdPx)
 
+    // 书籍扉页式页首：大号粗黑标题，下方一根全宽发丝线将扉页与内容分开
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(top = 10.dp)
             .graphicsLayer {
                 this.alpha = alpha
             }
     ) {
-        if (!subtitle.isNullOrBlank()) {
-            Text(
-                text = subtitle.uppercase(),
-                style = com.example.inkpaperdiary.core.designsystem.InkType.meta,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                letterSpacing = 1.2.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                fontSize = 24.sp,
-                lineHeight = 30.sp,
-                fontFamily = com.example.inkpaperdiary.core.designsystem.SansFontFamily,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (trailingContent != null) {
-                trailingContent()
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            if (!subtitle.isNullOrBlank()) {
+                Text(
+                    text = subtitle.uppercase(),
+                    style = com.example.inkpaperdiary.core.designsystem.InkType.meta,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 1.2.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 30.sp,
+                    lineHeight = 38.sp,
+                    fontFamily = com.example.inkpaperdiary.core.designsystem.SansFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (trailingContent != null) {
+                    trailingContent()
+                }
             }
         }
+        Spacer(modifier = Modifier.height(14.dp))
+        HorizontalDivider(
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.outline
+        )
     }
 }
 
