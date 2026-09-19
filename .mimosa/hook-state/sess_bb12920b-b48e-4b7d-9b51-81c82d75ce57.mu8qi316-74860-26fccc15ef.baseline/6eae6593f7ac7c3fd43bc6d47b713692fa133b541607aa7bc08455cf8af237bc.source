@@ -1,0 +1,90 @@
+package com.example.inkpaperdiary.core.designsystem.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.unit.dp
+
+/**
+ * Dairy 2.0 — 手绘线性符号（仅保留统计与空状态的装饰符号）。
+ * 心情与天气图标已随心情系统一并移除；天气在阅读页以文字呈现。
+ */
+
+private const val VIEWPORT = 24f
+
+@Composable
+private fun LineGlyph(
+    tint: Color,
+    modifier: Modifier,
+    content: DrawScope.(stroke: Stroke) -> Unit
+) {
+    Canvas(modifier = modifier.size(24.dp)) {
+        val scale = size.minDimension / VIEWPORT
+        val stroke = Stroke(
+            width = 1.7f * scale,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+        withTransform({ scale(scale, scale, pivot = Offset.Zero) }) {
+            content(stroke)
+        }
+    }
+}
+
+private fun flamePath(): Path = Path().apply {
+    moveTo(12f, 3.2f)
+    cubicTo(15.2f, 7.2f, 17.8f, 10.2f, 17.8f, 13.6f)
+    cubicTo(17.8f, 17.6f, 15.2f, 20.6f, 12f, 20.6f)
+    cubicTo(8.8f, 20.6f, 6.2f, 17.6f, 6.2f, 13.6f)
+    cubicTo(6.2f, 11.2f, 8f, 8.8f, 9.6f, 6.4f)
+    cubicTo(9.9f, 8.6f, 10.8f, 9.8f, 12f, 10.6f)
+    close()
+}
+
+/** 火焰：连续记录 */
+@Composable
+fun FlameGlyph(tint: Color, modifier: Modifier = Modifier) {
+    LineGlyph(tint = tint, modifier = modifier) { stroke ->
+        drawPath(flamePath(), tint, style = stroke)
+    }
+}
+
+/** 横向卷轴：累计篇数 / 空状态 */
+@Composable
+fun ScrollGlyph(tint: Color, modifier: Modifier = Modifier) {
+    LineGlyph(tint = tint, modifier = modifier) { stroke ->
+        drawCircle(tint, radius = 2.4f, center = Offset(5.8f, 12f), style = stroke)
+        drawCircle(tint, radius = 2.4f, center = Offset(18.2f, 12f), style = stroke)
+        drawLine(tint, Offset(5.8f, 9.6f), Offset(18.2f, 9.6f), strokeWidth = stroke.width, cap = StrokeCap.Round)
+        drawLine(tint, Offset(5.8f, 14.4f), Offset(18.2f, 14.4f), strokeWidth = stroke.width, cap = StrokeCap.Round)
+        drawLine(tint, Offset(9.6f, 11.2f), Offset(14.4f, 11.2f), strokeWidth = stroke.width, cap = StrokeCap.Round)
+        drawLine(tint, Offset(9.6f, 12.9f), Offset(13f, 12.9f), strokeWidth = stroke.width, cap = StrokeCap.Round)
+    }
+}
+
+/** 钢笔尖：创作总字数 */
+@Composable
+fun QuillGlyph(tint: Color, modifier: Modifier = Modifier) {
+    LineGlyph(tint = tint, modifier = modifier) { stroke ->
+        val nib = Path().apply {
+            moveTo(12f, 3.5f)
+            cubicTo(14.5f, 6.5f, 16.5f, 9f, 17f, 11.5f)
+            lineTo(12f, 20.5f)
+            lineTo(7f, 11.5f)
+            cubicTo(7.5f, 9f, 9.5f, 6.5f, 12f, 3.5f)
+            close()
+        }
+        drawPath(nib, tint, style = stroke)
+        drawCircle(tint, radius = 1.2f, center = Offset(12f, 11.5f), style = stroke)
+        drawLine(tint, Offset(12f, 12.7f), Offset(12f, 18.5f), strokeWidth = stroke.width, cap = StrokeCap.Round)
+    }
+}

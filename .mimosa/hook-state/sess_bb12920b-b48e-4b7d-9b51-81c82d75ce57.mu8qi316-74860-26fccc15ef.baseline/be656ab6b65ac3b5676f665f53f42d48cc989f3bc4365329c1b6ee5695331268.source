@@ -1,0 +1,21 @@
+package com.example.inkpaperdiary.domain.model
+
+/**
+ * 天气：仅作为日记的附加信息（历史数据兼容与阅读页元信息展示），
+ * 不再提供主动填写入口。
+ */
+enum class Weather(val code: String, val displayName: String) {
+    SUNNY("SUNNY", "晴"),
+    CLOUDY("CLOUDY", "多云"),
+    OVERCAST("OVERCAST", "阴"),
+    RAINY("RAINY", "雨"),
+    STORMY("STORMY", "雷雨"),
+    SNOWY("SNOWY", "雪"),
+    WINDY("WINDY", "风");
+
+    companion object {
+        fun fromCode(code: String?): Weather {
+            return entries.find { it.code.equals(code, ignoreCase = true) } ?: SUNNY
+        }
+    }
+}

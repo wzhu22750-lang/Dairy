@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260919T182725419Z-68036-0269959085f4",
+  "runId": "20260919T182725419Z-68036-0269959085f4",
+  "runStatus": "inconclusive",
+  "coverage": {
+    "status": "partial",
+    "reasons": [
+      {
+        "code": "candidate_limit_exceeded",
+        "stage": "candidate-select",
+        "target": "app/src/test/java/com/example/inkpaperdiary/tier2_boundaries/R2BoundaryEdgeCasesTest.kt",
+        "detail": "49 changed reviewable file(s) were not scanned because the limit is 20",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "candidate-select",
+        "target": "app/src/test/java/com/example/inkpaperdiary/tier2_boundaries/R2BoundaryEdgeCasesTest.kt",
+        "detail": "candidate_limit_exceeded: 49 changed reviewable file(s) were not scanned because the limit is 20",
+        "affectsCompletion": true
+      }
+    ]
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "0cd2732a06a1ec393e1590c5871820d40e31f865",
+  "diffHash": "53eb1cb136ea0ce1bb5bac5853f8ba4a67658ce007953da557a4f712c0ca06d2",
+  "rulesVersion": "unavailable",
+  "sessionHash": "e8abcd432dbb059ed77fabb21bdc9e654fd568d56d3ecfa760a1c0bb084c5b7e",
+  "reportRef": ".mimosa/reports/task-review-sess_bb12920b-b48e-4b7d-9b51-81c82d75ce57-20260919T182725419Z-68036-0269959085f4.json",
+  "events": [],
+  "observedFindingIds": [],
+  "verifiedFiles": [
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/domain/model/DiaryDraft.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/database/entity/DraftEntity.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/database/dao/DraftDao.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/database/AppDatabase.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/data/repository/DraftRepository.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/data/repository/MediaRepository.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/data/repository/DiaryRepository.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/editor/EditorViewModel.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/editor/EditorScreen.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/MainActivity.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/navigation/AppNavigation.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/draft/EditorViewModelDraftTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/draft/DraftModelTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/draft/DraftPersistenceScenariosTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/backup/TxtDiaryImporter.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/BackupManagerTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/DiaryModelTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/TxtDiaryImporterTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier4_scenarios/RealWorldApplicationScenariosTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier3_combinations/CrossFeaturePairwiseTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-09-19T18:27:25.719Z"
+}

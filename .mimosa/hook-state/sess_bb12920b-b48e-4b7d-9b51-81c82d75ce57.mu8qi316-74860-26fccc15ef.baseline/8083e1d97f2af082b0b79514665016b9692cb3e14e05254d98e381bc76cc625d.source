@@ -1,0 +1,34 @@
+package com.example.inkpaperdiary.ui.timeline
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.inkpaperdiary.data.repository.DiaryRepository
+import com.example.inkpaperdiary.domain.model.Diary
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+
+/** 书页流状态：按时间倒序的全量日记，分组渲染交给 UI 层。 */
+data class TimelineUiState(
+    val diaries: List<Diary> = emptyList(),
+    val isLoading: Boolean = false
+)
+
+class TimelineViewModel(private val repository: DiaryRepository) : ViewModel() {
+
+    val uiState: StateFlow<TimelineUiState> = repository.getAllDiaries()
+        .map { diaries -> diaries.sortedByDescending { it.entryDate } }
+        .map { TimelineUiState(diaries = it, isLoading = false) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimelineUiState(isLoading = true))
+
+    fun togglePin(diary: Diary) {
+        viewModelScope.launch {
+            repository.togglePin(diary.id)
+        }
+    }
+
+    fun deleteDiary(diaryId: String) {
+        viewModelScope.launch {
+            repository.softDeleteDiary(diaryId)
+        }
+    }
+}

@@ -1,0 +1,239 @@
+package com.example.inkpaperdiary.ui.navigation
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.example.inkpaperdiary.core.security.AppLockManager
+import com.example.inkpaperdiary.core.sync.SyncManager
+import com.example.inkpaperdiary.data.repository.DiaryRepository
+import com.example.inkpaperdiary.data.repository.DraftRepository
+import com.example.inkpaperdiary.data.repository.MediaRepository
+import com.example.inkpaperdiary.data.repository.SettingsRepository
+import kotlinx.coroutines.CoroutineScope
+import com.example.inkpaperdiary.ui.calendar.CalendarScreen
+import com.example.inkpaperdiary.ui.calendar.CalendarViewModel
+import com.example.inkpaperdiary.ui.editor.EditorScreen
+import com.example.inkpaperdiary.ui.editor.EditorViewModel
+import com.example.inkpaperdiary.ui.lock.LockScreen
+import com.example.inkpaperdiary.ui.lock.LockViewModel
+import com.example.inkpaperdiary.ui.onthisday.OnThisDayScreen
+import com.example.inkpaperdiary.ui.onthisday.OnThisDayViewModel
+import com.example.inkpaperdiary.ui.reader.ReadingSettingsViewModel
+import com.example.inkpaperdiary.ui.reader.ReaderRoute
+import com.example.inkpaperdiary.ui.search.SearchScreen
+import com.example.inkpaperdiary.ui.search.SearchViewModel
+import com.example.inkpaperdiary.ui.settings.SettingsScreen
+import com.example.inkpaperdiary.ui.settings.SettingsViewModel
+import com.example.inkpaperdiary.ui.stats.StatsScreen
+import com.example.inkpaperdiary.ui.stats.StatsViewModel
+import com.example.inkpaperdiary.ui.timeline.TimelineScreen
+import com.example.inkpaperdiary.ui.timeline.TimelineViewModel
+import com.example.inkpaperdiary.ui.trash.TrashScreen
+import com.example.inkpaperdiary.ui.trash.TrashViewModel
+
+/** 模态层目的地：阅读页为默认的条目打开方式，编辑页由阅读页进入。 */
+sealed interface AppDestination {
+    data class Reader(val diaryId: String) : AppDestination
+    data class Editor(val diaryId: String?, val entryDate: Long? = null) : AppDestination
+    data object Search : AppDestination
+    data object Stats : AppDestination
+    data object Trash : AppDestination
+}
+
+/**
+ * Dairy 2.0 — 双层导航：
+ * 1. 根层：4 栏索引条（书页 / 目录 / 回声 / 设置）；
+ * 2. 阅读层：阅读页 → 编辑页 / 搜索 / 回收站 / 统计（全屏推入）。
+ */
+@Composable
+fun AppNavigation(
+    diaryRepository: DiaryRepository,
+    draftRepository: DraftRepository,
+    settingsRepository: SettingsRepository,
+    mediaRepository: MediaRepository,
+    syncManager: SyncManager,
+    autosaveScope: CoroutineScope,
+    isLockEnabled: Boolean
+) {
+    var selectedTab by remember { mutableStateOf(IosTab.JOURNAL) }
+    val modalStack = remember { mutableStateListOf<AppDestination>() }
+
+    // 编辑页返回阅读页时触发阅读页重载
+    var readerRefreshKey by remember { mutableStateOf(0) }
+
+    val isAppLocked by AppLockManager.isLocked.collectAsState()
+    val currentModal = modalStack.lastOrNull()
+
+    // 预热并持久化根 Tab 的 ViewModel 实例
+    val timelineViewModel = remember { TimelineViewModel(diaryRepository) }
+    val calendarViewModel = remember { CalendarViewModel(diaryRepository) }
+    val onThisDayViewModel = remember { OnThisDayViewModel(diaryRepository) }
+    val settingsViewModel = remember { SettingsViewModel(settingsRepository, diaryRepository, syncManager) }
+    val readingSettingsViewModel = remember { ReadingSettingsViewModel(settingsRepository) }
+
+    // 系统返回键：优先回退模态层，其次回到书页 Tab
+    BackHandler(
+        enabled = !(isLockEnabled && isAppLocked) && (modalStack.isNotEmpty() || selectedTab != IosTab.JOURNAL)
+    ) {
+        if (modalStack.isNotEmpty()) {
+            val popped = modalStack.removeAt(modalStack.size - 1)
+            if (popped is AppDestination.Editor && modalStack.lastOrNull() is AppDestination.Reader) {
+                readerRefreshKey++
+            }
+        } else if (selectedTab != IosTab.JOURNAL) {
+            selectedTab = IosTab.JOURNAL
+        }
+    }
+
+    fun popModal() {
+        if (modalStack.isNotEmpty()) {
+            val popped = modalStack.removeAt(modalStack.size - 1)
+            if (popped is AppDestination.Editor && modalStack.lastOrNull() is AppDestination.Reader) {
+                readerRefreshKey++
+            }
+        }
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        if (isLockEnabled && isAppLocked) {
+            val lockViewModel = remember { LockViewModel(settingsRepository) }
+            LockScreen(
+                viewModel = lockViewModel,
+                onUnlocked = {
+                    AppLockManager.unlock()
+                }
+            )
+        } else {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (currentModal != null) {
+                    AnimatedContent(
+                        targetState = currentModal,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) +
+                                slideInVertically(animationSpec = androidx.compose.animation.core.tween(220)) { it / 20 })
+                                .togetherWith(
+                                    fadeOut(animationSpec = androidx.compose.animation.core.tween(160))
+                                )
+                        },
+                        label = "ModalTransition"
+                    ) { destination ->
+                        when (destination) {
+                            is AppDestination.Reader -> {
+                                ReaderRoute(
+                                    diaryId = destination.diaryId,
+                                    diaryRepository = diaryRepository,
+                                    settingsViewModel = readingSettingsViewModel,
+                                    refreshKey = readerRefreshKey,
+                                    onBack = { popModal() },
+                                    onEdit = { id -> modalStack.add(AppDestination.Editor(id)) }
+                                )
+                            }
+                            is AppDestination.Editor -> {
+                                val editorViewModel = remember(destination.diaryId, destination.entryDate) {
+                                    EditorViewModel(
+                                        diaryRepository, draftRepository, mediaRepository,
+                                        destination.diaryId, destination.entryDate, autosaveScope
+                                    )
+                                }
+                                EditorScreen(
+                                    viewModel = editorViewModel,
+                                    onNavigateBack = { popModal() }
+                                )
+                            }
+                            is AppDestination.Search -> {
+                                val searchViewModel = remember { SearchViewModel(diaryRepository) }
+                                SearchScreen(
+                                    viewModel = searchViewModel,
+                                    onNavigateBack = { popModal() },
+                                    onOpenDiary = { id -> modalStack.add(AppDestination.Reader(id)) }
+                                )
+                            }
+                            is AppDestination.Stats -> {
+                                val statsViewModel = remember { StatsViewModel(diaryRepository) }
+                                StatsScreen(
+                                    viewModel = statsViewModel,
+                                    onNavigateBack = { popModal() }
+                                )
+                            }
+                            is AppDestination.Trash -> {
+                                val trashViewModel = remember { TrashViewModel(diaryRepository) }
+                                TrashScreen(
+                                    viewModel = trashViewModel,
+                                    onNavigateBack = { popModal() }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AnimatedContent(
+                            targetState = selectedTab,
+                            transitionSpec = {
+                                fadeIn(animationSpec = androidx.compose.animation.core.tween(180))
+                                    .togetherWith(fadeOut(animationSpec = androidx.compose.animation.core.tween(140)))
+                            },
+                            label = "TabTransition"
+                        ) { tab ->
+                            when (tab) {
+                                IosTab.JOURNAL -> {
+                                    TimelineScreen(
+                                        viewModel = timelineViewModel,
+                                        onNavigateToReader = { id -> modalStack.add(AppDestination.Reader(id)) },
+                                        onNavigateToEditor = { id -> modalStack.add(AppDestination.Editor(id)) },
+                                        onNavigateToSearch = { modalStack.add(AppDestination.Search) }
+                                    )
+                                }
+                                IosTab.CALENDAR -> {
+                                    CalendarScreen(
+                                        viewModel = calendarViewModel,
+                                        onNavigateBack = null,
+                                        onNavigateToEditor = { id, entryDate ->
+                                            modalStack.add(AppDestination.Editor(id, entryDate))
+                                        }
+                                    )
+                                }
+                                IosTab.MEMORIES -> {
+                                    OnThisDayScreen(
+                                        viewModel = onThisDayViewModel,
+                                        onNavigateBack = null,
+                                        onOpenDiary = { id -> modalStack.add(AppDestination.Reader(id)) }
+                                    )
+                                }
+                                IosTab.SETTINGS -> {
+                                    SettingsScreen(
+                                        viewModel = settingsViewModel,
+                                        onNavigateBack = null,
+                                        onNavigateToTrash = { modalStack.add(AppDestination.Trash) },
+                                        onNavigateToStats = { modalStack.add(AppDestination.Stats) },
+                                        readingSettingsViewModel = readingSettingsViewModel
+                                    )
+                                }
+                            }
+                        }
+
+                        IosTabBar(
+                            selectedTab = selectedTab,
+                            onTabSelected = { selectedTab = it },
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,61 @@
+package com.example.inkpaperdiary.ui.search
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.inkpaperdiary.data.repository.DiaryRepository
+import com.example.inkpaperdiary.domain.model.Diary
+import com.example.inkpaperdiary.domain.model.Tag
+import kotlinx.coroutines.flow.*
+
+data class SearchUiState(
+    val query: String = "",
+    val results: List<Diary> = emptyList(),
+    val selectedTag: Tag? = null,
+    val allTags: List<Tag> = emptyList()
+) {
+    /** 是否处于"检索中"状态（有查询词或已选标签）。 */
+    val isSearching: Boolean get() = query.isNotBlank() || selectedTag != null
+}
+
+class SearchViewModel(private val repository: DiaryRepository) : ViewModel() {
+
+    private val _query = MutableStateFlow("")
+    private val _selectedTag = MutableStateFlow<Tag?>(null)
+
+    val uiState: StateFlow<SearchUiState> = combine(
+        _query,
+        _selectedTag,
+        repository.getAllDiaries(),
+        repository.getAllTags()
+    ) { query, tag, allDiaries, allTags ->
+        val trimmedQuery = query.trim()
+        var filtered = allDiaries
+
+        if (trimmedQuery.isNotBlank()) {
+            filtered = filtered.filter {
+                it.title.contains(trimmedQuery, ignoreCase = true) ||
+                    it.contentMarkdown.contains(trimmedQuery, ignoreCase = true) ||
+                    (it.locationName?.contains(trimmedQuery, ignoreCase = true) == true)
+            }
+        }
+
+        if (tag != null) {
+            filtered = filtered.filter { diary -> diary.tags.any { it.id == tag.id || it.name == tag.name } }
+        }
+
+        SearchUiState(
+            query = query,
+            results = filtered.sortedByDescending { it.entryDate },
+            selectedTag = tag,
+            allTags = allTags
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SearchUiState())
+
+    fun updateQuery(newQuery: String) {
+        _query.value = newQuery
+    }
+
+    fun toggleTag(tag: Tag) {
+        _selectedTag.value = if (_selectedTag.value?.id == tag.id) null else tag
+    }
+}

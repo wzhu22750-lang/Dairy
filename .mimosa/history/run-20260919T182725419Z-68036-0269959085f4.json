@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "mimosa-finding-history/v1",
+  "runId": "20260919T182725419Z-68036-0269959085f4",
+  "runStatus": "inconclusive",
+  "errors": [
+    "candidate-select:app/src/test/java/com/example/inkpaperdiary/tier2_boundaries/R2BoundaryEdgeCasesTest.kt: candidate_limit_exceeded: 49 changed reviewable file(s) were not scanned because the limit is 20"
+  ],
+  "target": ".",
+  "revision": "0cd2732a06a1ec393e1590c5871820d40e31f865",
+  "diffHash": "53eb1cb136ea0ce1bb5bac5853f8ba4a67658ce007953da557a4f712c0ca06d2",
+  "rulesVersion": "unavailable",
+  "recordedAt": "2026-09-19T18:27:25.419Z",
+  "timing": {
+    "startedAt": "2026-09-19T18:27:24.258Z",
+    "completedAt": "2026-09-19T18:27:25.419Z",
+    "durationMs": 1161
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "modelCalls": 0,
+    "measurement": "known-zero"
+  },
+  "findings": {
+    "total": 0,
+    "bySeverity": {},
+    "byStatus": {}
+  },
+  "coverage": {
+    "status": "partial",
+    "reasonCounts": {
+      "candidate_limit_exceeded": 1,
+      "project_check_failed": 1
+    }
+  },
+  "evidenceBoundary": "static_only",
+  "immutableReport": ".mimosa/reports/task-review-sess_bb12920b-b48e-4b7d-9b51-81c82d75ce57-20260919T182725419Z-68036-0269959085f4.json"
+}

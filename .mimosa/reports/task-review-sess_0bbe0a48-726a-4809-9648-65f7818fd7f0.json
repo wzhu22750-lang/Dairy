@@ -1,0 +1,826 @@
+{
+  "schema_version": "mimosa-task-review/v2",
+  "run_id": "20260919T182814869Z-68492-cffe4102b042",
+  "run_status": "inconclusive",
+  "errors": [
+    {
+      "stage": "candidate-select",
+      "target": "app/src/main/java/com/example/inkpaperdiary/ui/reader/ImageViewerOverlay.kt",
+      "reason": "candidate_limit_exceeded: 7 changed reviewable file(s) were not scanned because the limit is 20"
+    }
+  ],
+  "coverage": {
+    "schema_version": "mimosa-hook-coverage/v1",
+    "status": "partial",
+    "scope": "hook_observed_diff",
+    "baseline": {
+      "complete": true,
+      "captured_files": 107,
+      "candidate_limit": 5000,
+      "truncated": false,
+      "enumeration_error_count": 0,
+      "snapshot_error_count": 0,
+      "compensated_target_count": 27
+    },
+    "change_tracking": {
+      "touched_observed": 11,
+      "touched_retained": 11,
+      "truncated": false,
+      "bash_mutation": true,
+      "bash_discovered": 27,
+      "bash_discovery_limit": 80,
+      "bash_discovery_truncated": false
+    },
+    "candidates": {
+      "eligible_files": 27,
+      "selected_files": 20,
+      "limit": 20,
+      "truncated": true
+    },
+    "scanning": {
+      "required_files": 20,
+      "scanned_files": 20,
+      "skipped_files": 0,
+      "failed_files": 0,
+      "project_checks_required": 0,
+      "project_checks_completed": 0
+    },
+    "notification": {
+      "eligible_findings": 0,
+      "detailed_findings": 0,
+      "detail_limit": 3,
+      "truncated": false
+    },
+    "reason_counts": {
+      "candidate_limit_exceeded": 1,
+      "project_check_failed": 1
+    },
+    "reasons": [
+      {
+        "code": "candidate_limit_exceeded",
+        "stage": "candidate-select",
+        "target": "app/src/main/java/com/example/inkpaperdiary/ui/reader/ImageViewerOverlay.kt",
+        "detail": "7 changed reviewable file(s) were not scanned because the limit is 20",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "candidate-select",
+        "target": "app/src/main/java/com/example/inkpaperdiary/ui/reader/ImageViewerOverlay.kt",
+        "detail": "candidate_limit_exceeded: 7 changed reviewable file(s) were not scanned because the limit is 20",
+        "affects_completion": true
+      }
+    ],
+    "reasons_truncated": false
+  },
+  "generated_at": "2026-09-19T18:28:14.869Z",
+  "session_id": "sess_0bbe0a48-726a-4809-9648-65f7818fd7f0",
+  "target": ".",
+  "revision": "0cd2732a06a1ec393e1590c5871820d40e31f865",
+  "rules_version": "unavailable",
+  "diff_hash": "eb5f94d89ad9d742dc2c61eb3a76334f22753c855bedf4c6617b59491fd78513",
+  "diff": {
+    "algorithm": "sha256",
+    "changed_file_count": 20,
+    "changed_files": [
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/core/backup/TxtDiaryImporter.kt",
+        "ranges": [
+          {
+            "start": 384,
+            "end": 388
+          }
+        ],
+        "before_hash": "7660d5903f48e4ee69d9290e05ee4947e0da61031c5a6d94623ac6281f8a5f02",
+        "after_hash": "3bc4d25377fd259b1c0047f6a62d90ff3f74f2d080395ec54a96fb31549207ac"
+      },
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosListComponents.kt",
+        "ranges": [
+          {
+            "start": 60,
+            "end": 60
+          },
+          {
+            "start": 86,
+            "end": 86
+          },
+          {
+            "start": 125,
+            "end": 125
+          },
+          {
+            "start": 249,
+            "end": 249
+          },
+          {
+            "start": 259,
+            "end": 259
+          },
+          {
+            "start": 328,
+            "end": 330
+          },
+          {
+            "start": 379,
+            "end": 379
+          },
+          {
+            "start": 385,
+            "end": 386
+          },
+          {
+            "start": 400,
+            "end": 400
+          }
+        ],
+        "before_hash": "92c63f465c77ea3bba8eabf39071f1b0f499ffcd0e4693b3c38c27f14c5d9bbc",
+        "after_hash": "8a985fd1efed91dc60e67d179862356a8030ef6f7be9a8049aa46e3aa1d44c36"
+      },
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosModalDialog.kt",
+        "ranges": [
+          {
+            "start": 52,
+            "end": 52
+          },
+          {
+            "start": 56,
+            "end": 57
+          },
+          {
+            "start": 62,
+            "end": 62
+          },
+          {
+            "start": 154,
+            "end": 154
+          },
+          {
+            "start": 339,
+            "end": 339
+          }
+        ],
+        "before_hash": "acb6f7f3e007c4c5d0564790902bab29638cf1c178fab17af6a85ffb47e04719",
+        "after_hash": "3ed594a7f331bcf824eef91f8bf1ff14bbf3852d69b4d09272614f65932501ae"
+      },
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosSegmentedControl.kt",
+        "ranges": [
+          {
+            "start": 29,
+            "end": 30
+          },
+          {
+            "start": 81,
+            "end": 85
+          },
+          {
+            "start": 97,
+            "end": 97
+          },
+          {
+            "start": 125,
+            "end": 125
+          }
+        ],
+        "before_hash": "0a245ca85663b1900b172230f2e35c1e2107c9ec56656b6df767ee1ed9c7f2c3",
+        "after_hash": "0bac1b5c06a19aa629fefa8a772ea496dd7b0d2649047190bcf86cb7963c77ad"
+      },
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/ui/editor/EditorScreen.kt",
+        "ranges": [
+          {
+            "start": 447,
+            "end": 448
+          }
+        ],
+        "before_hash": "d8de8359ed9f8465a1b8363d3ace88d5970dc4b607e45a2993862d6390fd44cd",
+        "after_hash": "9928216421292f3ce3897d1d4858757696efb38509e81a6ca1e6cb8381285cac"
+      },
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/ui/navigation/NavRoutes.kt",
+        "ranges": [
+          {
+            "start": 3,
+            "end": 8
+          }
+        ],
+        "before_hash": "1775ac949cd8e6aeeba3c5c71d5f70134f368763beb496c80696384648a42f84",
+        "after_hash": "f275dd49081a22aaf72d7b98c033918d11526e42d07c31323c3108afeea5707f"
+      },
+      {
+        "file": "app/src/main/java/com/example/inkpaperdiary/ui/settings/SettingsScreen.kt",
+        "ranges": [
+          {
+            "start": 492,
+            "end": 492
+          },
+          {
+            "start": 494,
+            "end": 508
+          },
+          {
+            "start": 511,
+            "end": 512
+          },
+          {
+            "start": 541,
+            "end": 542
+          },
+          {
+            "start": 554,
+            "end": 554
+          },
+          {
+            "start": 774,
+            "end": 774
+          },
+          {
+            "start": 777,
+            "end": 778
+          },
+          {
+            "start": 780,
+            "end": 787
+          },
+          {
+            "start": 789,
+            "end": 789
+          },
+          {
+            "start": 793,
+            "end": 806
+          }
+        ],
+        "before_hash": "7131fc7a0800cedd56580d3319fbee0d7ffb62d79de6cb27bf3114edced64ca4",
+        "after_hash": "dbfefad3f27466a8c085cd685780f7fe80cbf4007dbbf473b037021ef5cb7115"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/challenger/AppleMaterialEmpiricalChallengeTest.kt",
+        "ranges": [
+          {
+            "start": 5,
+            "end": 6
+          },
+          {
+            "start": 38,
+            "end": 43
+          },
+          {
+            "start": 45,
+            "end": 47
+          },
+          {
+            "start": 58,
+            "end": 63
+          },
+          {
+            "start": 65,
+            "end": 67
+          },
+          {
+            "start": 75,
+            "end": 79
+          },
+          {
+            "start": 81,
+            "end": 81
+          },
+          {
+            "start": 84,
+            "end": 85
+          },
+          {
+            "start": 101,
+            "end": 103
+          },
+          {
+            "start": 110,
+            "end": 113
+          },
+          {
+            "start": 122,
+            "end": 129
+          },
+          {
+            "start": 149,
+            "end": 151
+          },
+          {
+            "start": 163,
+            "end": 165
+          },
+          {
+            "start": 187,
+            "end": 188
+          },
+          {
+            "start": 192,
+            "end": 193
+          },
+          {
+            "start": 195,
+            "end": 198
+          },
+          {
+            "start": 240,
+            "end": 243
+          },
+          {
+            "start": 247,
+            "end": 247
+          }
+        ],
+        "before_hash": "6265b68bd00eeb54cf20b0b41c6eaeca864ffef6aa0b6cc02c4ffebfe39ec826",
+        "after_hash": "7ad87202b9f4c1b6aa46556409deeb9ae7f898e5a0cfd67357cc704045e56d0d"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/challenger/IosActionSheetAndNavigationEmpiricalChallengeTest.kt",
+        "ranges": [
+          {
+            "start": 680,
+            "end": 683
+          },
+          {
+            "start": 685,
+            "end": 685
+          },
+          {
+            "start": 687,
+            "end": 687
+          }
+        ],
+        "before_hash": "33db44c3e3cf84f1264c269e315173f691f60790fe8e3d3bf6e8b46a4c87c632",
+        "after_hash": "ecc4c65427fc656477c1b6c8bcf205ce10a6573b0572b8fbbb5d55a245c08ac4"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/challenger/IosTabBarEmpiricalChallengeTest.kt",
+        "ranges": [
+          {
+            "start": 52,
+            "end": 54
+          },
+          {
+            "start": 56,
+            "end": 56
+          },
+          {
+            "start": 60,
+            "end": 62
+          },
+          {
+            "start": 70,
+            "end": 81
+          },
+          {
+            "start": 112,
+            "end": 112
+          },
+          {
+            "start": 116,
+            "end": 116
+          },
+          {
+            "start": 120,
+            "end": 120
+          }
+        ],
+        "before_hash": "562db8a9998ad78f3de6c789fc126ee2ea1a6ec361ab5cbb255687eda79e576f",
+        "after_hash": "12a25057b794bd214d2552fd1196e12af2f1252277e59af20a0842644b2f4602"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/challenger/M1StressTest.kt",
+        "ranges": [
+          {
+            "start": 8,
+            "end": 8
+          },
+          {
+            "start": 329,
+            "end": 329
+          },
+          {
+            "start": 334,
+            "end": 339
+          },
+          {
+            "start": 348,
+            "end": 350
+          },
+          {
+            "start": 358,
+            "end": 359
+          },
+          {
+            "start": 381,
+            "end": 383
+          },
+          {
+            "start": 398,
+            "end": 399
+          }
+        ],
+        "before_hash": "dba19b3c17d831965eb2d7fc9b24a363645d66834d04ea20b6c7b4de6f3a7059",
+        "after_hash": "d220c01f6fd2977fff4ef202890c699027737aefdfeefa0bbe3bdc0a8359b77a"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/challenger/SettingsScreenAndModalSheetsEmpiricalChallengeTest.kt",
+        "ranges": [
+          {
+            "start": 162,
+            "end": 162
+          },
+          {
+            "start": 348,
+            "end": 348
+          },
+          {
+            "start": 351,
+            "end": 353
+          },
+          {
+            "start": 376,
+            "end": 377
+          },
+          {
+            "start": 379,
+            "end": 382
+          }
+        ],
+        "before_hash": "1a411b42e2287a3c3e2e16e5ae21d8aec9e8fcc52ab3383a39393113102e0bd5",
+        "after_hash": "d382f3a36eee0c266d466587938f8e22f54421cb740655ccdff6ebd645b5ec38"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/challenger/TimelineScreenStreamFilterEmpiricalChallengeTest.kt",
+        "ranges": [
+          {
+            "start": 37,
+            "end": 37
+          },
+          {
+            "start": 99,
+            "end": 99
+          },
+          {
+            "start": 104,
+            "end": 104
+          },
+          {
+            "start": 113,
+            "end": 113
+          },
+          {
+            "start": 140,
+            "end": 140
+          },
+          {
+            "start": 143,
+            "end": 143
+          },
+          {
+            "start": 146,
+            "end": 148
+          },
+          {
+            "start": 150,
+            "end": 150
+          },
+          {
+            "start": 153,
+            "end": 153
+          },
+          {
+            "start": 155,
+            "end": 166
+          },
+          {
+            "start": 170,
+            "end": 175
+          },
+          {
+            "start": 205,
+            "end": 205
+          },
+          {
+            "start": 217,
+            "end": 217
+          },
+          {
+            "start": 238,
+            "end": 238
+          },
+          {
+            "start": 254,
+            "end": 254
+          },
+          {
+            "start": 267,
+            "end": 267
+          },
+          {
+            "start": 276,
+            "end": 277
+          },
+          {
+            "start": 291,
+            "end": 291
+          },
+          {
+            "start": 297,
+            "end": 297
+          },
+          {
+            "start": 327,
+            "end": 327
+          },
+          {
+            "start": 333,
+            "end": 333
+          },
+          {
+            "start": 583,
+            "end": 583
+          }
+        ],
+        "before_hash": "9ca0f6637b7ac65e916c0cde5cf6d48074b069a0d4b1988133e127ea97e2b3d7",
+        "after_hash": "4e02203c5fb144a55f43d92f98206440133f8f73ea11420311392113703415ec"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/core/designsystem/AppleMaterialTest.kt",
+        "ranges": [
+          {
+            "start": 10,
+            "end": 17
+          },
+          {
+            "start": 40,
+            "end": 41
+          },
+          {
+            "start": 44,
+            "end": 48
+          },
+          {
+            "start": 52,
+            "end": 52
+          },
+          {
+            "start": 56,
+            "end": 57
+          },
+          {
+            "start": 65,
+            "end": 69
+          },
+          {
+            "start": 74,
+            "end": 76
+          },
+          {
+            "start": 81,
+            "end": 81
+          },
+          {
+            "start": 88,
+            "end": 95
+          },
+          {
+            "start": 98,
+            "end": 98
+          },
+          {
+            "start": 103,
+            "end": 108
+          },
+          {
+            "start": 113,
+            "end": 113
+          },
+          {
+            "start": 115,
+            "end": 115
+          },
+          {
+            "start": 119,
+            "end": 120
+          },
+          {
+            "start": 135,
+            "end": 158
+          }
+        ],
+        "before_hash": "a948b3f9d65390da7e7b41a5920c6ed380211b44b397e32b925ca8b97ee12047",
+        "after_hash": "72b037f329c2ffec9667102cbc55ab051817179772a55b9b0b574674ce47daa9"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/DiaryModelTest.kt",
+        "ranges": [
+          {
+            "start": 4,
+            "end": 36
+          }
+        ],
+        "before_hash": "f91b11faf3e336c3fab622aeb2603e10823cfceaec9be773d958d4be21319b71",
+        "after_hash": "1840b9149e99a6395f28634cbccb771a72f6ad94a75a2ba27f50b772d0505cc1"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/tier1_features/MaterialIdiomPurgeAuditTest.kt",
+        "ranges": [
+          {
+            "start": 63,
+            "end": 73
+          },
+          {
+            "start": 76,
+            "end": 77
+          }
+        ],
+        "before_hash": "420c14b4d8bdf7093ef9f8787168493b65b47fce904181eb849d4d4154cff25e",
+        "after_hash": "bd4ab8b4a15571f6598189eee27e6e17afdeb1957b35730c5b36cd7215e020a6"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/tier1_features/R2NavigationFeatureTest.kt",
+        "ranges": [
+          {
+            "start": 6,
+            "end": 7
+          },
+          {
+            "start": 9,
+            "end": 12
+          },
+          {
+            "start": 218,
+            "end": 224
+          },
+          {
+            "start": 228,
+            "end": 234
+          },
+          {
+            "start": 238,
+            "end": 241
+          },
+          {
+            "start": 245,
+            "end": 245
+          },
+          {
+            "start": 247,
+            "end": 248
+          },
+          {
+            "start": 252,
+            "end": 257
+          }
+        ],
+        "before_hash": "8e00de4e88336cad101fc27a8376dc36d53b34a943f62ccedca3b4a03abf538c",
+        "after_hash": "3c431e81b9c372d3dafa036e77fe33c68f7dffcc671048a38c42106e1a9d3729"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/tier2_boundaries/R2BoundaryEdgeCasesTest.kt",
+        "ranges": [
+          {
+            "start": 3,
+            "end": 3
+          },
+          {
+            "start": 5,
+            "end": 6
+          },
+          {
+            "start": 51,
+            "end": 52
+          },
+          {
+            "start": 54,
+            "end": 55
+          },
+          {
+            "start": 59,
+            "end": 65
+          },
+          {
+            "start": 118,
+            "end": 118
+          }
+        ],
+        "before_hash": "58faf608199d614f139afccc24d4d12d4dc822988311c174f6dca9fffcecdafe",
+        "after_hash": "ba65f617e6dfe9677a099c439ec49296d70c2ae85d34b94e10e7ee72f70fb145"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/tier3_combinations/CrossFeaturePairwiseTest.kt",
+        "ranges": [
+          {
+            "start": 34,
+            "end": 34
+          },
+          {
+            "start": 41,
+            "end": 42
+          },
+          {
+            "start": 47,
+            "end": 48
+          },
+          {
+            "start": 57,
+            "end": 59
+          }
+        ],
+        "before_hash": "12d86ac7199aac27cf1f6a4a1b6446a26f08616ffac21db593440bc9bf0a6695",
+        "after_hash": "f886e3ac74b78356109da91b9ed9971ecb817e8697cbce0ad6c28cf6773a196a"
+      },
+      {
+        "file": "app/src/test/java/com/example/inkpaperdiary/tier4_scenarios/RealWorldApplicationScenariosTest.kt",
+        "ranges": [
+          {
+            "start": 12,
+            "end": 12
+          },
+          {
+            "start": 15,
+            "end": 16
+          },
+          {
+            "start": 38,
+            "end": 40
+          },
+          {
+            "start": 42,
+            "end": 42
+          },
+          {
+            "start": 68,
+            "end": 69
+          },
+          {
+            "start": 194,
+            "end": 195
+          },
+          {
+            "start": 250,
+            "end": 250
+          },
+          {
+            "start": 256,
+            "end": 256
+          }
+        ],
+        "before_hash": "17420a09348f981140da5ca576ae0896fc19b70d8f3cbaec2a06272e87942a49",
+        "after_hash": "a55297af78a920f10daadaa98611a4967618fc612379884169fa6fbee54cb5db"
+      }
+    ]
+  },
+  "timing": {
+    "started_at": "2026-09-19T18:28:13.348Z",
+    "completed_at": "2026-09-19T18:28:14.869Z",
+    "duration_ms": 1521,
+    "measurement": "hook_wall_clock"
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "model_calls": 0,
+    "measurement": "known-zero"
+  },
+  "telemetry": {
+    "schemaVersion": "mimosa-gate-telemetry/v1",
+    "profile": "gate",
+    "operation": "Stop",
+    "outcome": "partial/INCONCLUSIVE",
+    "latencyMs": 1521,
+    "peakMemoryBytes": 202833920,
+    "memoryMeasurement": "max-observed-process-rss",
+    "scannedFiles": 20,
+    "cache": {
+      "hits": 0,
+      "misses": 0,
+      "measurement": "not-applicable"
+    },
+    "denyCount": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "total": 0,
+      "modelCalls": 0,
+      "measurement": "known-zero"
+    }
+  },
+  "finding_count": 0,
+  "rewake_finding_count": 0,
+  "evidence_boundary": {
+    "scan": "candidate",
+    "static_fix_verification": "observed_static_only",
+    "runtime_verification": "not_performed"
+  },
+  "finding_events": [],
+  "findings": [],
+  "artifacts": {
+    "immutable_report": ".mimosa/reports/task-review-sess_0bbe0a48-726a-4809-9648-65f7818fd7f0-20260919T182814869Z-68492-cffe4102b042.json",
+    "latest_report": ".mimosa/reports/task-review-sess_0bbe0a48-726a-4809-9648-65f7818fd7f0.json",
+    "history_summary": ".mimosa/history/run-20260919T182814869Z-68492-cffe4102b042.json"
+  }
+}

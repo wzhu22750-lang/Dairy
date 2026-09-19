@@ -1,0 +1,9 @@
+package com.example.inkpaperdiary.domain.model
+
+/** 极简统计：只回答"写了多少、坚持多久、常写什么"。 */
+data class Stats(
+    val totalDiaries: Int = 0,
+    val totalWords: Int = 0,
+    val streakDays: Int = 0,
+    val topTags: List<Pair<String, Int>> = emptyList()
+)

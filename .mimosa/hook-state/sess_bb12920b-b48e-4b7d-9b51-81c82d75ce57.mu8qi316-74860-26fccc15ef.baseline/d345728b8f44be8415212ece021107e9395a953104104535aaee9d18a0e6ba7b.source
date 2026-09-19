@@ -1,0 +1,129 @@
+package com.example.inkpaperdiary.ui.onthisday
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.inkpaperdiary.core.designsystem.InkType
+import com.example.inkpaperdiary.core.designsystem.PaperTypography
+import com.example.inkpaperdiary.core.designsystem.scaffold.IosLargeTitleScaffold
+import com.example.inkpaperdiary.core.designsystem.scaffold.rememberLazyListScrollOffset
+import com.example.inkpaperdiary.core.designsystem.scaffold.IosNavBackButton
+import com.example.inkpaperdiary.ui.timeline.DiaryEntryBlock
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+/**
+ * Dairy 2.0 — 回声 (Echoes)
+ *
+ * 翻到往年的同一页：
+ * "N 年前的今天" 只是一行安静的注脚，回声本身是当年写下的字。
+ */
+@Composable
+fun OnThisDayScreen(
+    viewModel: OnThisDayViewModel,
+    onNavigateBack: (() -> Unit)? = null,
+    onOpenDiary: (String) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val todayFormatter = remember { SimpleDateFormat("M月d日", Locale.CHINESE) }
+    val todayStr = remember { todayFormatter.format(Date()) }
+
+    val listState = rememberLazyListState()
+    val scrollOffset = rememberLazyListScrollOffset(listState)
+
+    IosLargeTitleScaffold(
+        title = "回声",
+        lazyListState = listState,
+        navigationIcon = if (onNavigateBack != null) {
+            { IosNavBackButton(onNavigateBack = onNavigateBack) }
+        } else null
+    ) { innerPadding ->
+        if (uiState.memories.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = innerPadding.calculateTopPadding() + 12.dp)
+                    .padding(horizontal = 24.dp)
+            ) {
+                Text(
+                    text = "今天",
+                    style = InkType.meta,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = todayStr,
+                    style = PaperTypography.displayLarge.copy(fontSize = 24.sp),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(56.dp))
+                Text(
+                    text = "还没有回声。",
+                    style = InkType.readerTitle(),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "多年后的今天，\n会与此刻的自己重逢。",
+                    style = PaperTypography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 8.dp,
+                    bottom = 120.dp
+                )
+            ) {
+                item(key = "header") {
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        Text(
+                            text = "今天",
+                            style = InkType.meta,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = todayStr,
+                            style = PaperTypography.displayLarge.copy(fontSize = 24.sp),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
+
+                items(uiState.memories, key = { it.diary.id }) { memory ->
+                    val diary = memory.diary
+                    val yearFormatter = remember { SimpleDateFormat("yyyy年M月d日", Locale.getDefault()) }
+                    val formattedDate = remember(diary.entryDate) { yearFormatter.format(Date(diary.entryDate)) }
+
+                    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+                        Text(
+                            text = "${memory.yearsAgo} 年前的今天 · $formattedDate",
+                            style = InkType.chapterLabel(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        DiaryEntryBlock(
+                            diary = diary,
+                            onClick = { onOpenDiary(diary.id) },
+                            onLongClick = {}
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outline)
+                    }
+                }
+            }
+        }
+    }
+}

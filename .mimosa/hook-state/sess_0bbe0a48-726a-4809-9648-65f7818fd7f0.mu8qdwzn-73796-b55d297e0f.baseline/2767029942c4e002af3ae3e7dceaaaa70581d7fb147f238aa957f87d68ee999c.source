@@ -1,0 +1,556 @@
+package com.example.inkpaperdiary.core.designsystem.scaffold
+
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.inkpaperdiary.core.designsystem.AppleMaterials
+import com.example.inkpaperdiary.core.designsystem.SansFontFamily
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
+import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
+
+/**
+ * Apple Human Interface Guidelines (HIG) Large Title Design Constants and Formulas.
+ */
+object IosLargeTitleDefaults {
+    val CollapseThresholdDp: Dp = 52.dp
+    val TopBarHeight: Dp = 44.dp
+    val HairlineBorderWidth: Dp = 0.5.dp
+    const val FROSTED_GLASS_ALPHA_THRESHOLD: Float = 0.95f
+
+    /**
+     * Compute inline title alpha from scroll offset and threshold in pixels.
+     * Formula: (scrollOffset / thresholdPx).coerceIn(0f, 1f)
+     */
+    fun calculateInlineTitleAlpha(scrollOffsetPx: Float, thresholdPx: Float): Float {
+        if (thresholdPx <= 0f) return 1f
+        return (scrollOffsetPx / thresholdPx).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Compute large title alpha from scroll offset and threshold in pixels.
+     * Formula: (1f - (scrollOffset / thresholdPx)).coerceIn(0f, 1f)
+     */
+    fun calculateLargeTitleAlpha(scrollOffsetPx: Float, thresholdPx: Float): Float {
+        if (thresholdPx <= 0f) return 0f
+        return (1f - (scrollOffsetPx / thresholdPx)).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Determine whether header frosted glass elevation is active.
+     */
+    fun isHeaderFrosted(alpha: Float): Boolean = alpha >= FROSTED_GLASS_ALPHA_THRESHOLD
+}
+
+/**
+ * Primary Apple HIG Large Title Scaffold for Jetpack Compose.
+ *
+ * Implements a 2-tier scrolling hierarchy:
+ * - Pinned frosted glass top navigation bar at the top edge (44dp + status bar insets).
+ * - Underlying content viewport that scrolls underneath the top bar.
+ * - Dynamic scroll coupling driving the 34sp -> 17sp title transition and frosted elevation.
+ *
+ * @param title The canonical screen title (e.g. "日记", "设置").
+ * @param scrollState ScrollState of a scrollable Column.
+ * @param navigationIcon Optional leading action (typically back button or modal dismiss).
+ * @param actions Optional trailing action buttons (icons or text buttons).
+ * @param modifier Outer container modifier.
+ * @param bottomBar Optional bottom navigation bar (e.g. IosTabBar).
+ * @param snackbarHost Optional snackbar host slot.
+ * @param containerColor Background color of the scaffold.
+ * @param contentColor Default text/icon content color.
+ * @param scrollThreshold Dp offset required to fully collapse the title (default: 52dp).
+ * @param content Screen content lambda receiving inner padding values for edge-to-edge alignment.
+ */
+@Composable
+fun IosLargeTitleScaffold(
+    title: String,
+    scrollState: ScrollState,
+    modifier: Modifier = Modifier,
+    navigationIcon: (@Composable () -> Unit)? = null,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+    bottomBar: (@Composable () -> Unit)? = null,
+    snackbarHost: (@Composable () -> Unit)? = null,
+    containerColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = MaterialTheme.colorScheme.onBackground,
+    scrollThreshold: Dp = IosLargeTitleDefaults.CollapseThresholdDp,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val scrollOffset = rememberScrollStateOffset(scrollState)
+    IosLargeTitleScaffold(
+        title = title,
+        scrollOffset = scrollOffset,
+        modifier = modifier,
+        navigationIcon = navigationIcon,
+        actions = actions,
+        bottomBar = bottomBar,
+        snackbarHost = snackbarHost,
+        containerColor = containerColor,
+        contentColor = contentColor,
+        scrollThreshold = scrollThreshold,
+        content = content
+    )
+}
+
+/**
+ * Overload for LazyColumn / LazyListState containers.
+ */
+@Composable
+fun IosLargeTitleScaffold(
+    title: String,
+    lazyListState: LazyListState,
+    modifier: Modifier = Modifier,
+    navigationIcon: (@Composable () -> Unit)? = null,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+    bottomBar: (@Composable () -> Unit)? = null,
+    snackbarHost: (@Composable () -> Unit)? = null,
+    containerColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = MaterialTheme.colorScheme.onBackground,
+    scrollThreshold: Dp = IosLargeTitleDefaults.CollapseThresholdDp,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val density = LocalDensity.current
+    val thresholdPx = remember(density, scrollThreshold) {
+        with(density) { scrollThreshold.toPx() }
+    }
+    val scrollOffset = rememberLazyListScrollOffset(lazyListState, thresholdPx)
+    IosLargeTitleScaffold(
+        title = title,
+        scrollOffset = scrollOffset,
+        modifier = modifier,
+        navigationIcon = navigationIcon,
+        actions = actions,
+        bottomBar = bottomBar,
+        snackbarHost = snackbarHost,
+        containerColor = containerColor,
+        contentColor = contentColor,
+        scrollThreshold = scrollThreshold,
+        content = content
+    )
+}
+
+/**
+ * Low-level overload supporting arbitrary float scroll offsets.
+ */
+@Composable
+fun IosLargeTitleScaffold(
+    title: String,
+    scrollOffset: Float,
+    modifier: Modifier = Modifier,
+    navigationIcon: (@Composable () -> Unit)? = null,
+    actions: (@Composable RowScope.() -> Unit)? = null,
+    bottomBar: (@Composable () -> Unit)? = null,
+    snackbarHost: (@Composable () -> Unit)? = null,
+    containerColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = MaterialTheme.colorScheme.onBackground,
+    scrollThreshold: Dp = IosLargeTitleDefaults.CollapseThresholdDp,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    val density = LocalDensity.current
+    val scrollThresholdPx = remember(density, scrollThreshold) {
+        with(density) { scrollThreshold.toPx() }
+    }
+
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val topBarTotalHeight = statusBarTop + IosLargeTitleDefaults.TopBarHeight
+
+    val innerPadding = remember(topBarTotalHeight) {
+        PaddingValues(
+            top = topBarTotalHeight,
+            bottom = 0.dp
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
+        // 1. Content Viewport (renders behind the floating translucent top bar)
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+            content(innerPadding)
+        }
+
+        // 2. Pinned Top Layer: Translucent Large Title Top Bar
+        IosLargeTitleTopBar(
+            title = title,
+            scrollOffset = scrollOffset,
+            scrollThresholdPx = scrollThresholdPx,
+            navigationIcon = navigationIcon,
+            actions = actions,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+
+        // 3. Optional Bottom Bar (e.g. IosTabBar)
+        if (bottomBar != null) {
+            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                bottomBar()
+            }
+        }
+
+        // 4. Optional Snackbar Host
+        if (snackbarHost != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = if (bottomBar != null) 60.dp else 16.dp)
+            ) {
+                snackbarHost()
+            }
+        }
+    }
+}
+
+/**
+ * Apple HIG Collapsible Large Title Top Bar Header
+ *
+ * Implements iOS UINavigationBar behavior:
+ * - Resting state: Clear/transparent background, inline title hidden, large title visible in content.
+ * - Scrolling state: Smooth crossfade based on 52dp collapse threshold.
+ * - Collapsed state: Frosted glass material (93% translucency), 0.5dp hairline border, 17sp SemiBold title.
+ */
+@Composable
+fun IosLargeTitleTopBar(
+    title: String,
+    scrollOffset: Float,
+    modifier: Modifier = Modifier,
+    scrollThresholdPx: Float = with(LocalDensity.current) { IosLargeTitleDefaults.CollapseThresholdDp.toPx() },
+    navigationIcon: (@Composable () -> Unit)? = null,
+    actions: (@Composable RowScope.() -> Unit)? = null
+) {
+    val isDark = isSystemInDarkTheme()
+    val progress = IosLargeTitleDefaults.calculateInlineTitleAlpha(scrollOffset, scrollThresholdPx)
+
+    // Frosted glass background: 93% translucency when collapsed, transparent at rest
+    val baseBarColor = AppleMaterials.barBackgroundColor(isDark)
+    val barBgColor = baseBarColor.copy(alpha = progress * baseBarColor.alpha)
+
+    // 0.5dp hairline bottom divider
+    val baseSeparatorColor = AppleMaterials.separatorColor(isDark)
+    val dividerColor = baseSeparatorColor.copy(alpha = progress * baseSeparatorColor.alpha)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(barBgColor)
+            .windowInsetsPadding(WindowInsets.statusBars)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IosLargeTitleDefaults.TopBarHeight)
+                .padding(horizontal = 8.dp)
+        ) {
+            // Left Action / Navigation Button
+            if (navigationIcon != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    navigationIcon()
+                }
+            }
+
+            // Centered Inline Title (17sp SemiBold), fades in with scroll progress
+            Text(
+                text = title,
+                fontSize = 17.sp,
+                lineHeight = 22.sp,
+                fontFamily = SansFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.4).sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = progress),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 72.dp)
+            )
+
+            // Right Actions
+            if (actions != null) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    content = actions
+                )
+            }
+        }
+
+        // Bottom 0.5dp hairline divider
+        HorizontalDivider(
+            thickness = IosLargeTitleDefaults.HairlineBorderWidth,
+            color = dividerColor
+        )
+    }
+}
+
+/**
+ * Large Title item designed to sit at the top of a scrollable view (e.g. first item of LazyColumn).
+ * Features smooth inverse-alpha fadeout as content collapses into the top bar.
+ */
+@Composable
+fun IosLargeTitleItem(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    scrollOffset: Float = 0f,
+    scrollThresholdPx: Float = with(LocalDensity.current) { IosLargeTitleDefaults.CollapseThresholdDp.toPx() },
+    trailingContent: (@Composable () -> Unit)? = null
+) {
+    val alpha = IosLargeTitleDefaults.calculateLargeTitleAlpha(scrollOffset, scrollThresholdPx)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .graphicsLayer {
+                this.alpha = alpha
+            }
+    ) {
+        if (!subtitle.isNullOrBlank()) {
+            Text(
+                text = subtitle.uppercase(),
+                style = com.example.inkpaperdiary.core.designsystem.InkType.meta,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.2.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                fontSize = 24.sp,
+                lineHeight = 30.sp,
+                fontFamily = com.example.inkpaperdiary.core.designsystem.SansFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 0.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (trailingContent != null) {
+                trailingContent()
+            }
+        }
+    }
+}
+
+/**
+ * Helper to compute scroll offset from a LazyListState.
+ * When scrolled past the first item entirely, guarantees full collapse offset.
+ */
+@Composable
+fun rememberLazyListScrollOffset(
+    listState: LazyListState,
+    thresholdPx: Float = with(LocalDensity.current) { IosLargeTitleDefaults.CollapseThresholdDp.toPx() }
+): Float {
+    return remember(listState, thresholdPx) {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex > 0) {
+                thresholdPx * 2f
+            } else {
+                listState.firstVisibleItemScrollOffset.toFloat().coerceAtLeast(0f)
+            }
+        }
+    }.value
+}
+
+/**
+ * Helper to compute scroll offset from a ScrollState.
+ */
+@Composable
+fun rememberScrollStateOffset(scrollState: ScrollState): Float {
+    return remember(scrollState) {
+        derivedStateOf {
+            scrollState.value.toFloat().coerceAtLeast(0f)
+        }
+    }.value
+}
+
+/**
+ * iOS Navigation Bar Icon Button primitive with spring touch physics and zero ripple.
+ */
+@Composable
+fun IosNavIconButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.primary,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .size(36.dp)
+            .iosIconClick(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = if (enabled) tint else tint.copy(alpha = 0.38f),
+            modifier = Modifier.size(22.dp)
+        )
+    }
+}
+
+/**
+ * iOS Navigation Bar Text Button primitive ("取消", "完成", "清空").
+ */
+@Composable
+fun IosNavTextButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    isPrimary: Boolean = false,
+    color: Color = MaterialTheme.colorScheme.primary,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .defaultMinSize(minWidth = 36.dp, minHeight = 36.dp)
+            .padding(horizontal = 8.dp)
+            .iosClick(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontSize = 17.sp,
+            fontFamily = SansFontFamily,
+            fontWeight = if (isPrimary) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (enabled) color else color.copy(alpha = 0.38f)
+        )
+    }
+}
+
+/**
+ * iOS Navigation Bar Back Button with optional text label and spring touch physics.
+ */
+@Composable
+fun IosNavBackButton(
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    label: String? = null,
+    tint: Color = MaterialTheme.colorScheme.primary
+) {
+    Row(
+        modifier = modifier
+            .height(36.dp)
+            .iosClick(onClick = onNavigateBack)
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "返回",
+            tint = tint,
+            modifier = Modifier.size(20.dp)
+        )
+        if (!label.isNullOrBlank()) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = label,
+                fontSize = 17.sp,
+                fontFamily = SansFontFamily,
+                fontWeight = FontWeight.Normal,
+                color = tint
+            )
+        }
+    }
+}
+
+/**
+ * Optional nested scroll connection state holder for non-standard scroll containers
+ * (e.g. LazyVerticalGrid, multi-nested scroll layouts).
+ */
+@Stable
+class IosLargeTitleScrollState(
+    val thresholdPx: Float = 156f
+) {
+    var scrollOffset by mutableFloatStateOf(0f)
+        private set
+
+    val progress: Float
+        get() = (scrollOffset / thresholdPx).coerceIn(0f, 1f)
+
+    val nestedScrollConnection = object : NestedScrollConnection {
+        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+            val delta = -available.y
+            if (delta > 0 && scrollOffset < thresholdPx) {
+                val prev = scrollOffset
+                scrollOffset = (scrollOffset + delta).coerceIn(0f, thresholdPx * 2f)
+                val consumed = scrollOffset - prev
+                return Offset(0f, -consumed)
+            }
+            return Offset.Zero
+        }
+
+        override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+            val delta = -available.y
+            if (delta < 0 && scrollOffset > 0) {
+                val prev = scrollOffset
+                scrollOffset = (scrollOffset + delta).coerceIn(0f, thresholdPx * 2f)
+                val consumed = scrollOffset - prev
+                return Offset(0f, -consumed)
+            }
+            return Offset.Zero
+        }
+    }
+}

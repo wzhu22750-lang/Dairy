@@ -1,0 +1,49 @@
+package com.example.inkpaperdiary.core.designsystem.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
+
+/**
+ * Dairy 2.0 — 纸面文本块 (Paper Block)
+ *
+ * 原 iOS 毛玻璃卡片已废除。列表条目不再是"卡片"，
+ * 而是直接坐在纸面上的一段内容：无边框、无投影、无底色。
+ * 唯一的交互反馈是极轻的按压缩放与墨色变化。
+ */
+@Composable
+fun PaperCard(
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = Color.Transparent,
+    shape: Shape = MaterialTheme.shapes.extraSmall,
+    enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val interactionModifier = if (onClick != null || onLongClick != null) {
+        Modifier.iosClick(
+            enabled = enabled,
+            pressedScale = 0.98f,
+            pressedAlpha = 0.7f,
+            haptic = false,
+            onClick = onClick ?: {},
+            onLongClick = onLongClick
+        )
+    } else {
+        Modifier
+    }
+
+    Column(
+        modifier = modifier
+            .then(interactionModifier)
+            .background(backgroundColor, shape),
+        content = content
+    )
+}

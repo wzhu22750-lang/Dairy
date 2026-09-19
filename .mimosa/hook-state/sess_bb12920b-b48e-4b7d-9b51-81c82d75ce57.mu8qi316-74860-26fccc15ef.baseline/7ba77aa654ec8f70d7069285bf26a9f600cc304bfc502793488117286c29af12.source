@@ -1,0 +1,56 @@
+package com.example.inkpaperdiary
+
+import com.example.inkpaperdiary.core.backup.BackupManager
+import com.example.inkpaperdiary.domain.model.Diary
+import com.example.inkpaperdiary.domain.model.Tag
+import com.example.inkpaperdiary.domain.model.Weather
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class BackupManagerTest {
+
+    @Test
+    fun testJsonImportExportCycle() = runBlocking {
+        val sampleJson = """
+            [
+              {
+                "id": "11111111-2222-3333-4444-555555555555",
+                "userId": "user_001",
+                "title": "测试日记",
+                "contentMarkdown": "这是测试内容",
+                "mood": "FULFILLED",
+                "weather": "CLOUDY",
+                "locationName": "成都市",
+                "entryDate": 1700000000000,
+                "createdAt": 1700000000000,
+                "updatedAt": 1700000000000,
+                "isPinned": true,
+                "tags": [
+                  {
+                    "id": "tag_01",
+                    "name": "读书",
+                    "colorHex": "#9E3323"
+                  }
+                ]
+              }
+            ]
+        """.trimIndent()
+
+        val imported = BackupManager.importFromJson(sampleJson)
+        assertTrue(imported.isSuccess)
+        val list = imported.getOrNull()!!
+        assertEquals(1, list.size)
+
+        val diary = list[0]
+        assertEquals("11111111-2222-3333-4444-555555555555", diary.id)
+        assertEquals("测试日记", diary.title)
+        assertEquals("这是测试内容", diary.contentMarkdown)
+        assertEquals(Weather.CLOUDY, diary.weather)
+        assertEquals("成都市", diary.locationName)
+        assertEquals(true, diary.isPinned)
+        assertEquals(1, diary.tags.size)
+        assertEquals("读书", diary.tags[0].name)
+    }
+}

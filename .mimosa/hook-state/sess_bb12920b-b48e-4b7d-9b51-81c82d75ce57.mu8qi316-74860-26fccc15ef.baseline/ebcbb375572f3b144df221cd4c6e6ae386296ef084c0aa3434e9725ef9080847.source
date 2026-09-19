@@ -1,0 +1,222 @@
+package com.example.inkpaperdiary.data.repository
+
+import com.example.inkpaperdiary.core.database.AppDatabase
+import com.example.inkpaperdiary.core.database.entity.AttachmentEntity
+import com.example.inkpaperdiary.core.database.entity.DiaryEntity
+import com.example.inkpaperdiary.core.database.entity.DiaryTagCrossRef
+import com.example.inkpaperdiary.core.database.entity.TagEntity
+import com.example.inkpaperdiary.domain.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.*
+
+/** 正式日记读写契约，供 ViewModel 与测试替身使用 */
+interface DiaryStore {
+    suspend fun getDiaryById(id: String): Diary?
+    suspend fun saveDiary(diary: Diary)
+}
+
+class DiaryRepository(private val database: AppDatabase) : DiaryStore {
+    private val diaryDao = database.diaryDao()
+    private val attachmentDao = database.attachmentDao()
+    private val tagDao = database.tagDao()
+
+    fun getAllDiaries(): Flow<List<Diary>> {
+        return diaryDao.getAllDiaries()
+            .map { list -> list.map { it.toDomain() } }
+            .flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getDiaryById(id: String): Diary? = withContext(Dispatchers.IO) {
+        diaryDao.getDiaryById(id)?.toDomain()
+    }
+
+    fun getDiariesBetweenDates(startTime: Long, endTime: Long): Flow<List<Diary>> {
+        return diaryDao.getDiariesBetweenDates(startTime, endTime)
+            .map { list -> list.map { it.toDomain() } }
+            .flowOn(Dispatchers.IO)
+    }
+
+    fun searchDiaries(query: String): Flow<List<Diary>> {
+        return diaryDao.searchDiaries(query)
+            .map { list -> list.map { it.toDomain() } }
+            .flowOn(Dispatchers.IO)
+    }
+
+    suspend fun getOnThisDay(date: Date = Date()): List<Diary> = withContext(Dispatchers.IO) {
+        val formatter = SimpleDateFormat("MM-dd", Locale.getDefault())
+        val monthDay = formatter.format(date)
+        diaryDao.getOnThisDay(monthDay).map { it.toDomain() }
+    }
+
+    fun getTrashDiaries(): Flow<List<Diary>> {
+        return diaryDao.getTrashDiaries()
+            .map { list -> list.map { it.toDomain() } }
+            .flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun saveDiary(diary: Diary) = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        val diaryEntity = DiaryEntity(
+            id = diary.id,
+            userId = diary.userId,
+            title = diary.title,
+            contentMarkdown = diary.contentMarkdown,
+            mood = "CALM", // 心情系统已移除；实体列保留仅为历史数据兼容
+            weather = diary.weather.code,
+            locationName = diary.locationName,
+            latitude = diary.latitude,
+            longitude = diary.longitude,
+            entryDate = diary.entryDate,
+            createdAt = if (diary.createdAt == 0L) now else diary.createdAt,
+            updatedAt = now,
+            isPinned = diary.isPinned,
+            isDeleted = diary.isDeleted,
+            deletedAt = diary.deletedAt,
+            syncStatus = 1 // DIRTY
+        )
+
+        diaryDao.insertOrUpdate(diaryEntity)
+
+        // 保存附件：先清理 DB 中已被用户移除的附件（同时删除对应的磁盘文件），再写回剩余附件
+        val existingAttachments = attachmentDao.getAttachmentsForDiary(diary.id).first()
+        val retainedIds = diary.attachments.map { it.id }.toSet()
+        existingAttachments
+            .filter { it.id !in retainedIds }
+            .forEach { deleteAttachmentFile(it.localPath) }
+        attachmentDao.deleteForDiary(diary.id)
+        if (diary.attachments.isNotEmpty()) {
+            val attachmentEntities = diary.attachments.mapIndexed { index, att ->
+                AttachmentEntity(
+                    id = att.id,
+                    diaryId = diary.id,
+                    localPath = att.localPath,
+                    remoteUrl = att.remoteUrl,
+                    fileName = att.fileName,
+                    fileSize = att.fileSize,
+                    mimeType = att.mimeType,
+                    sortOrder = index,
+                    // 保留已同步附件状态，避免每次编辑都把图片标记为待上传
+                    syncStatus = if (att.remoteUrl.isNullOrBlank()) 1 else 0
+                )
+            }
+            attachmentDao.insertAll(attachmentEntities)
+        }
+
+        // 保存标签与交叉引用：复用同名标签已有 id，避免 REPLACE + 唯一索引级联删除其他日记的关联
+        tagDao.deleteCrossRefsForDiary(diary.id)
+        for (tag in diary.tags) {
+            val name = tag.name.trim()
+            if (name.isEmpty()) continue
+            val existing = tagDao.getTagByName(name)
+            val tagId = existing?.id ?: tag.id
+            // 只有数据库里确实不存在同名标签时才插入，否则沿用已有 id
+            if (existing == null) {
+                tagDao.insertTag(
+                    TagEntity(
+                        id = tagId,
+                        name = name,
+                        colorHex = tag.colorHex,
+                        createdAt = tag.createdAt
+                    )
+                )
+            }
+            tagDao.insertCrossRef(DiaryTagCrossRef(diaryId = diary.id, tagId = tagId))
+        }
+    }
+
+    suspend fun softDeleteDiary(id: String) = withContext(Dispatchers.IO) {
+        diaryDao.softDelete(id, System.currentTimeMillis())
+    }
+
+    suspend fun restoreDiary(id: String) = withContext(Dispatchers.IO) {
+        diaryDao.restoreFromTrash(id)
+    }
+
+    suspend fun togglePin(id: String) = withContext(Dispatchers.IO) {
+        // 只更新置顶字段，避免整体重写附件/标签（也不影响已同步状态）
+        val current = diaryDao.getDiaryEntityAnyStatus(id) ?: return@withContext
+        diaryDao.updatePinned(id, !current.isPinned)
+    }
+
+    suspend fun hardDeleteDiary(id: String) = withContext(Dispatchers.IO) {
+        // 优先删除磁盘上的附件文件，再删数据库记录
+        attachmentDao.getAttachmentsForDiary(id).first().forEach { deleteAttachmentFile(it.localPath) }
+        diaryDao.hardDelete(id)
+    }
+
+    suspend fun purgeOldTrash(maxDays: Int = 30) = withContext(Dispatchers.IO) {
+        val cutoff = System.currentTimeMillis() - (maxDays.toLong() * 24 * 60 * 60 * 1000)
+        // 找出将被清除的日记并删除对应附件文件
+        diaryDao.getTrashDiaries().first()
+            .filter { it.diary.deletedAt != null && it.diary.deletedAt < cutoff }
+            .flatMap { it.attachments }
+            .forEach { deleteAttachmentFile(it.localPath) }
+        diaryDao.purgeOldTrash(cutoff)
+    }
+
+    private fun deleteAttachmentFile(localPath: String) {
+        if (localPath.isNotBlank()) {
+            runCatching { File(localPath).delete() }
+        }
+    }
+
+    fun getAllTags(): Flow<List<Tag>> {
+        return tagDao.getAllTags().map { list ->
+            list.map { Tag(id = it.id, name = it.name, colorHex = it.colorHex, createdAt = it.createdAt) }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    fun getStats(): Flow<Stats> {
+        return getAllDiaries().map { diaries ->
+            val totalDiaries = diaries.size
+            val totalWords = diaries.sumOf { it.wordCount }
+            
+            // 计算连续写日记天数 (Streak)
+            val streak = calculateStreak(diaries)
+
+            // 热门标签统计
+            val tagCounts = diaries.flatMap { it.tags }
+                .groupingBy { it.name }
+                .eachCount()
+                .toList()
+                .sortedByDescending { it.second }
+
+            Stats(
+                totalDiaries = totalDiaries,
+                totalWords = totalWords,
+                streakDays = streak,
+                topTags = tagCounts
+            )
+        }.flowOn(Dispatchers.IO)
+    }
+
+    private fun calculateStreak(diaries: List<Diary>): Int {
+        if (diaries.isEmpty()) return 0
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val days = diaries
+            .map { Instant.ofEpochMilli(it.entryDate).atZone(zone).toLocalDate() }
+            .toHashSet()
+
+        var streak = 0
+        var cursor = today
+        // 今天没写则从昨天开始算（跨年、跨月均安全）
+        if (cursor !in days) cursor = cursor.minusDays(1)
+        while (cursor in days) {
+            streak++
+            cursor = cursor.minusDays(1)
+        }
+        return streak
+    }
+}

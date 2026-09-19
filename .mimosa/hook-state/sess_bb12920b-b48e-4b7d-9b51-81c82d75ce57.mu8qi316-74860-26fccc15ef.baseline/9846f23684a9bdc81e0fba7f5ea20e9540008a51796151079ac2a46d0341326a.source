@@ -1,0 +1,144 @@
+package com.example.inkpaperdiary.ui.stats
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.inkpaperdiary.core.designsystem.InkType
+import com.example.inkpaperdiary.core.designsystem.PaperTypography
+import com.example.inkpaperdiary.core.designsystem.SerifFontFamily
+import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
+
+/**
+ * Dairy 2.0 — 书的刻度 (The Ledger)
+ *
+ * 统计不是核心，只是书脊上的几道刻度：
+ * 写了多少天、多少页、多少字。
+ * 数字用衬线体呈现，像扉页上的印刷数字。
+ */
+@Composable
+fun StatsScreen(
+    viewModel: StatsViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val stats by viewModel.stats.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+    ) {
+        // 顶栏
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .iosIconClick(onClick = onNavigateBack)
+                    .align(Alignment.CenterStart),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "返回",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Text(
+                text = "刻度",
+                style = PaperTypography.displayLarge.copy(fontSize = 17.sp),
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+        ) {
+            LedgerNumber(value = stats.streakDays, unit = "天", label = "连续书写")
+            Spacer(modifier = Modifier.height(26.dp))
+            LedgerNumber(value = stats.totalDiaries, unit = "页", label = "写下的书页")
+            Spacer(modifier = Modifier.height(26.dp))
+            LedgerNumber(value = stats.totalWords, unit = "字", label = "落下的笔墨")
+            Spacer(modifier = Modifier.height(26.dp))
+
+            if (stats.topTags.isNotEmpty()) {
+                HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outline)
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "常写的字",
+                    style = InkType.meta,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                stats.topTags.take(10).forEach { (tagName, count) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = tagName,
+                            style = PaperTypography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = "$count",
+                            style = PaperTypography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 一个刻度：大号衬线数字 + 单位 + 说明。 */
+@Composable
+private fun LedgerNumber(value: Int, unit: String, label: String) {
+    Row(verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = "$value",
+            fontSize = 44.sp,
+            lineHeight = 50.sp,
+            fontFamily = SerifFontFamily,
+            fontWeight = FontWeight.Light,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+            text = " $unit",
+            style = PaperTypography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+    }
+    Text(
+        text = label,
+        style = InkType.meta,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}

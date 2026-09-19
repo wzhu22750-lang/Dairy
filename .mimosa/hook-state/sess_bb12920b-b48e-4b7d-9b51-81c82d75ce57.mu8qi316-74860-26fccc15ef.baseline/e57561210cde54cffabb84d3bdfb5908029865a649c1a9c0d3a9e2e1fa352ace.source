@@ -1,0 +1,478 @@
+package com.example.inkpaperdiary.ui.timeline
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.inkpaperdiary.core.designsystem.InkType
+import com.example.inkpaperdiary.core.designsystem.PaperDiaryTheme
+import com.example.inkpaperdiary.core.designsystem.PaperTypography
+import com.example.inkpaperdiary.core.designsystem.SansFontFamily
+import com.example.inkpaperdiary.core.designsystem.SerifFontFamily
+import com.example.inkpaperdiary.core.designsystem.components.IosActionItem
+import com.example.inkpaperdiary.core.designsystem.components.IosActionSheet
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
+import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
+import com.example.inkpaperdiary.core.designsystem.scaffold.IosNavIconButton
+import com.example.inkpaperdiary.core.designsystem.scaffold.IosLargeTitleScaffold
+import com.example.inkpaperdiary.core.security.AppLockManager
+import com.example.inkpaperdiary.domain.model.Attachment
+import com.example.inkpaperdiary.domain.model.Diary
+import com.example.inkpaperdiary.domain.model.Tag
+import com.example.inkpaperdiary.domain.model.Weather
+import java.io.File
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.TextStyle as JavaTextStyle
+import java.util.Locale
+
+/**
+ * Dairy 2.0 — 书页 (The Book of Time)
+ *
+ * 首页不再是"日记列表"，而是一本按时间装订的个人书：
+ * - 年份与月份作为章节标题，日期作为书页页码；
+ * - 每一天的内容直接印在纸上：无卡片、无边框、无胶囊；
+ * - 唯一的装饰是墨色与留白。
+ */
+@Composable
+fun TimelineScreen(
+    viewModel: TimelineViewModel,
+    onNavigateToReader: (String) -> Unit,
+    onNavigateToEditor: (String?) -> Unit,
+    onNavigateToSearch: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    TimelineContent(
+        uiState = uiState,
+        onTogglePin = { viewModel.togglePin(it) },
+        onDeleteDiary = { viewModel.deleteDiary(it) },
+        onOpenDiary = onNavigateToReader,
+        onNewDiary = { onNavigateToEditor(null) },
+        onNavigateToSearch = onNavigateToSearch
+    )
+}
+
+/** 单一天的分组： LocalDate -> 当天全部日记（按时间正序）。 */
+internal data class DaySection(
+    val date: LocalDate,
+    val diaries: List<Diary>
+)
+
+@Composable
+fun TimelineContent(
+    uiState: TimelineUiState,
+    onTogglePin: (Diary) -> Unit,
+    onDeleteDiary: (String) -> Unit,
+    onOpenDiary: (String) -> Unit,
+    onNewDiary: () -> Unit,
+    onNavigateToSearch: () -> Unit
+) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    var selectedDiaryForAction by remember { mutableStateOf<Diary?>(null) }
+
+    val sections = remember(uiState.diaries) { groupByDay(uiState.diaries) }
+
+    IosLargeTitleScaffold(
+        title = "书页",
+        lazyListState = listState,
+        actions = {
+            IosNavIconButton(
+                icon = Icons.Outlined.Search,
+                contentDescription = "搜索",
+                tint = MaterialTheme.colorScheme.onBackground,
+                onClick = onNavigateToSearch
+            )
+            IosNavIconButton(
+                icon = Icons.Outlined.Edit,
+                contentDescription = "书写今天",
+                tint = MaterialTheme.colorScheme.onBackground,
+                onClick = onNewDiary
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + 12.dp,
+                bottom = 120.dp
+            )
+        ) {
+            if (sections.isEmpty()) {
+                item(key = "empty") {
+                    BookEmptyState(onNewDiary = onNewDiary)
+                }
+            } else {
+                var lastYear = -1
+                var lastMonth = -1
+                sections.forEachIndexed { index, section ->
+                    // 年份章节：仅当年份变化时出现
+                    if (section.date.year != lastYear) {
+                        lastYear = section.date.year
+                        item(key = "year_${section.date.year}") {
+                            YearChapter(year = section.date.year)
+                        }
+                    }
+                    // 月份章节
+                    if (section.date.monthValue != lastMonth) {
+                        lastMonth = section.date.monthValue
+                        item(key = "month_${section.date.year}_${section.date.monthValue}") {
+                            MonthChapter(month = section.date.monthValue)
+                        }
+                    }
+                    item(key = "day_${section.date.toEpochDay()}", contentType = "day") {
+                        DaySectionView(
+                            section = section,
+                            onOpenDiary = onOpenDiary,
+                            onLongPress = { selectedDiaryForAction = it }
+                        )
+                    }
+                    if (index != sections.lastIndex) {
+                        item(key = "sep_${section.date.toEpochDay()}") {
+                            DaySeparator()
+                        }
+                    }
+                }
+            }
+        }
+
+        // 长按呼出的轻量操作单
+        val actionDiary = selectedDiaryForAction
+        if (actionDiary != null) {
+            val titleText = actionDiary.title.ifBlank { actionDiary.previewText.take(28).ifBlank { "这一页" } }
+            IosActionSheet(
+                visible = true,
+                title = titleText,
+                actions = listOf(
+                    IosActionItem(
+                        title = if (actionDiary.isPinned) "取消置顶" else "置顶这一页",
+                        icon = if (actionDiary.isPinned) Icons.Outlined.PushPin else Icons.Filled.PushPin,
+                        onClick = { onTogglePin(actionDiary) }
+                    ),
+                    IosActionItem(
+                        title = "编辑",
+                        icon = Icons.Outlined.Edit,
+                        onClick = { onOpenDiaryForEdit(actionDiary, onOpenDiary) }
+                    ),
+                    IosActionItem(
+                        title = "移入回收站",
+                        icon = Icons.Outlined.Delete,
+                        isDestructive = true,
+                        onClick = { onDeleteDiary(actionDiary.id) }
+                    )
+                ),
+                onDismissRequest = { selectedDiaryForAction = null }
+            )
+        }
+    }
+}
+
+private fun onOpenDiaryForEdit(diary: Diary, onOpenDiary: (String) -> Unit) {
+    // 编辑路径统一经由阅读页的"编辑"入口；此处直接打开阅读页
+    onOpenDiary(diary.id)
+}
+
+/** 按自然日分组（本地时区），保持倒序（新的一天在上）。 */
+internal fun groupByDay(diaries: List<Diary>): List<DaySection> {
+    if (diaries.isEmpty()) return emptyList()
+    val zone = ZoneId.systemDefault()
+    return diaries
+        .groupBy { Instant.ofEpochMilli(it.entryDate).atZone(zone).toLocalDate() }
+        .entries
+        .sortedByDescending { it.key }
+        .map { (date, list) -> DaySection(date, list.sortedByDescending { it.entryDate }) }
+}
+
+// ---------------------------------------------------------------------------
+// 章节组件
+// ---------------------------------------------------------------------------
+
+/** 年份章节：一行淡墨的年份数字。 */
+@Composable
+private fun YearChapter(year: Int) {
+    Text(
+        text = year.toString(),
+        style = InkType.chapterLabel(),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+    )
+}
+
+/** 月份章节：衬线月份名。 */
+@Composable
+private fun MonthChapter(month: Int) {
+    val monthName = remember(month) {
+        java.time.Month.of(month).getDisplayName(JavaTextStyle.FULL, Locale.CHINESE)
+    }
+    Text(
+        text = monthName,
+        style = InkType.chapterLabel().copy(
+            fontSize = InkType.chapterLabel().fontSize * 1.2f
+        ),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp)
+    )
+}
+
+/** 一天的书页：页码（日期）+ 当天全部内容。 */
+@Composable
+private fun DaySectionView(
+    section: DaySection,
+    onOpenDiary: (String) -> Unit,
+    onLongPress: (Diary) -> Unit
+) {
+    val zone = ZoneId.systemDefault()
+    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+        // 页码：大号衬线日期 + 星期与可选天气
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = section.date.dayOfMonth.toString(),
+                style = InkType.chapterDay(),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            val weekday = section.date.dayOfWeek.getDisplayName(JavaTextStyle.SHORT, Locale.CHINESE)
+            val first = section.diaries.first()
+            val weatherText = first.weather.displayName.takeIf { section.diaries.size == 1 }
+            Text(
+                text = listOfNotNull(weekday, weatherText).joinToString(" · "),
+                style = InkType.meta,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 当天的每一页内容
+        section.diaries.forEachIndexed { index, diary ->
+            DiaryEntryBlock(
+                diary = diary,
+                onClick = { onOpenDiary(diary.id) },
+                onLongClick = { onLongPress(diary) }
+            )
+            if (index != section.diaries.lastIndex) {
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+        }
+    }
+}
+
+/** 单篇日记：标题 + 预览正文 + 插图行。直接印在纸面上。 */
+@Composable
+fun DiaryEntryBlock(
+    diary: Diary,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .iosClick(
+                pressedScale = 0.99f,
+                pressedAlpha = 0.75f,
+                haptic = false,
+                onLongClick = onLongClick,
+                onClick = onClick
+            )
+    ) {
+        if (diary.title.isNotBlank()) {
+            Text(
+                text = diary.title,
+                style = com.example.inkpaperdiary.core.designsystem.PaperTypography.titleLarge.copy(
+                    fontFamily = com.example.inkpaperdiary.core.designsystem.SerifFontFamily,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    letterSpacing = 0.sp
+                ),
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        if (diary.isPinned) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.PushPin,
+                    contentDescription = "置顶",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(11.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "置顶",
+                    style = InkType.meta,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        Text(
+            text = diary.previewText.ifBlank { "（无正文）" },
+            style = com.example.inkpaperdiary.core.designsystem.PaperTypography.bodyMedium.copy(
+                fontFamily = com.example.inkpaperdiary.core.designsystem.SerifFontFamily,
+                lineHeight = 24.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = if (diary.attachments.isNotEmpty()) 2 else 4,
+            overflow = TextOverflow.Ellipsis
+        )
+        if (diary.attachments.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(10.dp))
+            EntryPhotoStrip(attachments = diary.attachments)
+        }
+    }
+}
+
+/** 插图行：最多三张，2dp 微圆角，像书页上的贴印照片。 */
+@Composable
+fun EntryPhotoStrip(attachments: List<Attachment>) {
+    val context = LocalContext.current
+    val shown = attachments.take(3)
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(shown, key = { it.id }) { att ->
+            val imageModel = remember(att) {
+                if (File(att.localPath).exists()) File(att.localPath) else att.remoteUrl
+            }
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageModel)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "日记插图",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(width = 132.dp, height = 96.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+        }
+        if (attachments.size > 3) {
+            item(key = "more") {
+                Box(
+                    modifier = Modifier
+                        .size(width = 48.dp, height = 96.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+${attachments.size - 3}",
+                        style = InkType.meta,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 天与天之间的留白线：极淡发丝线，营造书页翻页节奏。 */
+@Composable
+private fun DaySeparator() {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 24.dp, vertical = 22.dp)
+            .fillMaxWidth()
+            .height(0.5.dp)
+            .background(MaterialTheme.colorScheme.outline)
+    )
+}
+
+/** 空书页：安静的第一页。 */
+@Composable
+private fun BookEmptyState(onNewDiary: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp, vertical = 96.dp)
+    ) {
+        Text(
+            text = "还在第一页。",
+            style = InkType.readerTitle(),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = "写下今天的第一个字，\n这本书就开始了。",
+            style = PaperTypography.bodyLarge.copy(fontFamily = SansFontFamily),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(28.dp))
+        Text(
+            text = "开始书写",
+            style = PaperTypography.labelLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier
+                .iosClick(onClick = onNewDiary)
+                .padding(vertical = 8.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "书页 - 浅色")
+@Composable
+private fun TimelineScreenPreviewLight() {
+    val sample = listOf(
+        Diary(
+            id = "1",
+            title = "午后在街角书店",
+            contentMarkdown = "今天读完了博尔赫斯的《沙之书》，窗外有微风掠过梧桐树叶，纸页沙沙作响。下午的光落在桌面上，一切都慢了下来。",
+            weather = Weather.SUNNY,
+            isPinned = true,
+            tags = listOf(Tag("1", "阅读")),
+            entryDate = System.currentTimeMillis()
+        )
+    )
+    PaperDiaryTheme(darkTheme = false) {
+        TimelineContent(
+            uiState = TimelineUiState(diaries = sample),
+            onTogglePin = {},
+            onDeleteDiary = {},
+            onOpenDiary = {},
+            onNewDiary = {},
+            onNavigateToSearch = {}
+        )
+    }
+}

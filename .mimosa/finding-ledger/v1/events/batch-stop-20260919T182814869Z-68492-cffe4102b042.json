@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260919T182814869Z-68492-cffe4102b042",
+  "runId": "20260919T182814869Z-68492-cffe4102b042",
+  "runStatus": "inconclusive",
+  "coverage": {
+    "status": "partial",
+    "reasons": [
+      {
+        "code": "candidate_limit_exceeded",
+        "stage": "candidate-select",
+        "target": "app/src/main/java/com/example/inkpaperdiary/ui/reader/ImageViewerOverlay.kt",
+        "detail": "7 changed reviewable file(s) were not scanned because the limit is 20",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "candidate-select",
+        "target": "app/src/main/java/com/example/inkpaperdiary/ui/reader/ImageViewerOverlay.kt",
+        "detail": "candidate_limit_exceeded: 7 changed reviewable file(s) were not scanned because the limit is 20",
+        "affectsCompletion": true
+      }
+    ]
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "0cd2732a06a1ec393e1590c5871820d40e31f865",
+  "diffHash": "eb5f94d89ad9d742dc2c61eb3a76334f22753c855bedf4c6617b59491fd78513",
+  "rulesVersion": "unavailable",
+  "sessionHash": "b2c8daa145c0806027530cfccd31698e02f45b732378d99ef206483965bbb3a3",
+  "reportRef": ".mimosa/reports/task-review-sess_0bbe0a48-726a-4809-9648-65f7818fd7f0-20260919T182814869Z-68492-cffe4102b042.json",
+  "events": [],
+  "observedFindingIds": [
+    "mimosa-8677364fdaf9c759b63dc37c",
+    "mimosa-60f76dfd4f4a4e51add15d7a",
+    "mimosa-3237ccca7f51def7f8cc6ab8",
+    "mimosa-088a230cac0a8f1b8af111c3",
+    "mimosa-82d499f3c4a18dc54ace46cb",
+    "mimosa-3e8c3670ef90fa68f9dc970f",
+    "mimosa-f1a8eb8d36a85cbc21c4cb03",
+    "mimosa-3ca0762fe8f113d558aadfb1"
+  ],
+  "verifiedFiles": [
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/settings/SettingsScreen.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosListComponents.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosSegmentedControl.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/backup/TxtDiaryImporter.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/core/designsystem/AppleMaterialTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/M1StressTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/IosActionSheetAndNavigationEmpiricalChallengeTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/SettingsScreenAndModalSheetsEmpiricalChallengeTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosModalDialog.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/editor/EditorScreen.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/main/java/com/example/inkpaperdiary/ui/navigation/NavRoutes.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/DiaryModelTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier4_scenarios/RealWorldApplicationScenariosTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier3_combinations/CrossFeaturePairwiseTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier2_boundaries/R2BoundaryEdgeCasesTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier1_features/MaterialIdiomPurgeAuditTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/tier1_features/R2NavigationFeatureTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/AppleMaterialEmpiricalChallengeTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/IosTabBarEmpiricalChallengeTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "app/src/test/java/com/example/inkpaperdiary/challenger/TimelineScreenStreamFilterEmpiricalChallengeTest.kt",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-09-19T18:28:15.185Z"
+}

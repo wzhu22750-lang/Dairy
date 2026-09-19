@@ -1,0 +1,91 @@
+package com.example.inkpaperdiary.core.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.inkpaperdiary.core.database.dao.AttachmentDao
+import com.example.inkpaperdiary.core.database.dao.DiaryDao
+import com.example.inkpaperdiary.core.database.dao.DraftDao
+import com.example.inkpaperdiary.core.database.dao.TagDao
+import com.example.inkpaperdiary.core.database.entity.AttachmentEntity
+import com.example.inkpaperdiary.core.database.entity.DiaryEntity
+import com.example.inkpaperdiary.core.database.entity.DiaryTagCrossRef
+import com.example.inkpaperdiary.core.database.entity.DraftEntity
+import com.example.inkpaperdiary.core.database.entity.TagEntity
+
+@Database(
+    entities = [
+        DiaryEntity::class,
+        AttachmentEntity::class,
+        TagEntity::class,
+        DiaryTagCrossRef::class,
+        DraftEntity::class
+    ],
+    version = 2,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun diaryDao(): DiaryDao
+    abstract fun attachmentDao(): AttachmentDao
+    abstract fun tagDao(): TagDao
+    abstract fun draftDao(): DraftDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        /**
+         * v1 → v2：新增 drafts 草稿表（草稿持久化系统）。
+         * 只创建新表，不触碰 diary_entries 等既有数据，用户日记在升级后完整保留。
+         */
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `drafts` (
+                        `draftId` TEXT NOT NULL,
+                        `diaryId` TEXT,
+                        `userId` TEXT NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `contentMarkdown` TEXT NOT NULL,
+                        `weather` TEXT NOT NULL,
+                        `locationName` TEXT,
+                        `entryDate` INTEGER NOT NULL,
+                        `diaryCreatedAt` INTEGER NOT NULL,
+                        `isPinned` INTEGER NOT NULL,
+                        `tagsJson` TEXT NOT NULL,
+                        `attachmentsJson` TEXT NOT NULL,
+                        `createdTime` INTEGER NOT NULL,
+                        `updatedTime` INTEGER NOT NULL,
+                        `metadataJson` TEXT NOT NULL,
+                        PRIMARY KEY(`draftId`)
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_drafts_diaryId` ON `drafts` (`diaryId`)")
+                // 防御性清理：空草稿（无标题/正文/配图）没有恢复价值
+                db.execSQL(
+                    "DELETE FROM `drafts` WHERE `title` = '' AND `contentMarkdown` = '' AND `attachmentsJson` = '[]'"
+                )
+            }
+        }
+
+        fun getInstance(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "ink_paper_diary.db"
+                )
+                    .addMigrations(MIGRATION_1_2)
+                    .fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+}

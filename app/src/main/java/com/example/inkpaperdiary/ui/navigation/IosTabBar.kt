@@ -103,7 +103,8 @@ fun IosTabBar(
     modifier: Modifier = Modifier
 ) {
     val activeColor = MaterialTheme.colorScheme.onBackground
-    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+    // 未激活图标保持清晰可辨的墨灰（参考墨水屏阅读器的底部索引条）
+    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f)
 
     Column(
         modifier = modifier

@@ -1,0 +1,320 @@
+package com.example.inkpaperdiary.ui.calendar
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.inkpaperdiary.core.designsystem.InkType
+import com.example.inkpaperdiary.core.designsystem.PaperDiaryTheme
+import com.example.inkpaperdiary.core.designsystem.PaperTypography
+import com.example.inkpaperdiary.core.designsystem.SerifFontFamily
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
+import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
+import com.example.inkpaperdiary.core.designsystem.scaffold.IosNavBackButton
+import com.example.inkpaperdiary.ui.timeline.DiaryEntryBlock
+import com.example.inkpaperdiary.domain.model.Diary
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+
+/**
+ * Dairy 2.0 — 目录 (The Index)
+ *
+ * 日历不再是一张管理工具的表格，而是这本书的目录：
+ * - 月份像章节标题一样安静地翻动；
+ * - 有字的日期留一枚淡墨点；
+ * - 点按日期，翻到那一页。
+ */
+@Composable
+fun CalendarScreen(
+    viewModel: CalendarViewModel,
+    onNavigateBack: (() -> Unit)? = null,
+    onNavigateToEditor: (String?, Long?) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    val monthFormatter = remember { SimpleDateFormat("yyyy年 M月", Locale.CHINESE) }
+    val monthTitle = remember(uiState.currentMonth) { monthFormatter.format(uiState.currentMonth.time) }
+    val dayTitleFormatter = remember { SimpleDateFormat("M月d日 EEEE", Locale.CHINESE) }
+    val selectedDayTitle = remember(uiState.selectedDate) { dayTitleFormatter.format(uiState.selectedDate.time) }
+
+    val calendarMonth = uiState.currentMonth
+    val daysInMonth = calendarMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
+    val firstDayOfWeek = remember(calendarMonth) {
+        val temp = calendarMonth.clone() as Calendar
+        temp.set(Calendar.DAY_OF_MONTH, 1)
+        ((temp.get(Calendar.DAY_OF_WEEK) + 5) % 7) // 0=周一 ... 6=周日
+    }
+    val todayCal = remember { Calendar.getInstance() }
+    val isCurrentMonth = todayCal.get(Calendar.YEAR) == calendarMonth.get(Calendar.YEAR) &&
+        todayCal.get(Calendar.MONTH) == calendarMonth.get(Calendar.MONTH)
+    val todayNum = todayCal.get(Calendar.DAY_OF_MONTH)
+
+    val selectedDayNum = uiState.selectedDate.get(Calendar.DAY_OF_MONTH)
+    val isSameMonth = uiState.selectedDate.get(Calendar.YEAR) == calendarMonth.get(Calendar.YEAR) &&
+        uiState.selectedDate.get(Calendar.MONTH) == calendarMonth.get(Calendar.MONTH)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(bottom = if (onNavigateBack != null) 24.dp else 108.dp)
+    ) {
+        // ---- 顶栏：返回 / 标题 ----
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 4.dp)
+        ) {
+            if (onNavigateBack != null) {
+                IosNavBackButton(
+                    onNavigateBack = onNavigateBack,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
+            }
+            Text(
+                text = "目录",
+                style = PaperTypography.displayLarge.copy(fontSize = 17.sp),
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+        ) {
+            // ---- 月份章节行 ----
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 18.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = monthTitle,
+                    style = InkType.chapterLabel().copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 1.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Row {
+                    Box(
+                        modifier = Modifier.iosIconClick { viewModel.previousMonth() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "上一个月",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Box(
+                        modifier = Modifier.iosIconClick { viewModel.nextMonth() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "下一个月",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                }
+            }
+
+            // ---- 星期表头 ----
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("一", "二", "三", "四", "五", "六", "日").forEach { dayName ->
+                    Text(
+                        text = dayName,
+                        style = InkType.meta,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // ---- 目录网格 ----
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(7),
+                modifier = Modifier.fillMaxWidth(),
+                userScrollEnabled = false
+            ) {
+                items(firstDayOfWeek) {
+                    Spacer(modifier = Modifier.aspectRatio(1f))
+                }
+                items((1..daysInMonth).toList()) { dayNum ->
+                    val isSelected = isSameMonth && selectedDayNum == dayNum
+                    val isToday = isCurrentMonth && todayNum == dayNum
+                    val hasEntry = (uiState.diaryDaysMap[dayNum] ?: emptyList()).isNotEmpty()
+
+                    DayCell(
+                        dayNum = dayNum,
+                        isSelected = isSelected,
+                        isToday = isToday,
+                        hasEntry = hasEntry,
+                        onClick = { viewModel.selectDate(dayNum) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outline)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ---- 所选日期的书页 ----
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = selectedDayTitle,
+                    style = InkType.chapterLabel(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+
+            if (uiState.selectedDayDiaries.isEmpty()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "这一天还没有字。",
+                        style = PaperTypography.bodyMedium.copy(fontFamily = SerifFontFamily),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "补写这一页",
+                        style = PaperTypography.labelLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier
+                            .iosClick(
+                                onClick = { onNavigateToEditor(null, uiState.selectedDate.timeInMillis) }
+                            )
+                            .padding(vertical = 8.dp)
+                    )
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                    uiState.selectedDayDiaries.forEach { diary ->
+                        DiaryEntryBlock(
+                            diary = diary,
+                            onClick = { onNavigateToEditor(diary.id, null) },
+                            onLongClick = {}
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** 目录中的一天：衬线数字 + 淡墨点。 */
+@Composable
+private fun DayCell(
+    dayNum: Int,
+    isSelected: Boolean,
+    isToday: Boolean,
+    hasEntry: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .aspectRatio(0.9f)
+            .iosClick(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(
+                    if (isSelected) MaterialTheme.colorScheme.surfaceVariant else androidx.compose.ui.graphics.Color.Transparent,
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "$dayNum",
+                fontSize = 15.sp,
+                fontFamily = SerifFontFamily,
+                fontWeight = when {
+                    isSelected -> FontWeight.SemiBold
+                    isToday -> FontWeight.Medium
+                    else -> FontWeight.Normal
+                },
+                color = if (isSelected || isToday) MaterialTheme.colorScheme.onBackground
+                else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(modifier = Modifier.height(3.dp))
+        // 日记存在提示：淡墨点
+        Box(
+            modifier = Modifier
+                .size(3.dp)
+                .background(
+                    if (hasEntry) MaterialTheme.colorScheme.onSurfaceVariant else androidx.compose.ui.graphics.Color.Transparent,
+                    CircleShape
+                )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "目录 - 浅色")
+@Composable
+private fun CalendarPreview() {
+    PaperDiaryTheme(darkTheme = false) {
+        // 预览骨架：不依赖 ViewModel
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            Text("目录预览", modifier = Modifier.padding(24.dp))
+        }
+    }
+}

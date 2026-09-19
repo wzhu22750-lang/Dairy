@@ -1,0 +1,209 @@
+package com.example.inkpaperdiary.ui.trash
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Restore
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.inkpaperdiary.core.designsystem.InkType
+import com.example.inkpaperdiary.core.designsystem.PaperTypography
+import com.example.inkpaperdiary.core.designsystem.components.IosModalDialog
+import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
+import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
+import com.example.inkpaperdiary.ui.timeline.DiaryEntryBlock
+import com.example.inkpaperdiary.domain.model.Diary
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+/**
+ * Dairy 2.0 — 废纸篓 (The Waste Basket)
+ *
+ * 被撕下的书页在此停留三十天。
+ * 30 天后自动焚毁；也可提前恢复或销毁（销毁需确认）。
+ */
+@Composable
+fun TrashScreen(
+    viewModel: TrashViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val diaries by viewModel.trashDiaries.collectAsState()
+    var showEmptyConfirm by remember { mutableStateOf(false) }
+    var pendingHardDelete by remember { mutableStateOf<Diary?>(null) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.statusBars)
+    ) {
+        // 顶栏
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .iosIconClick(onClick = onNavigateBack),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "返回",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Text(
+                text = "废纸篓",
+                style = PaperTypography.displayLarge.copy(fontSize = 17.sp),
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            if (diaries.isNotEmpty()) {
+                Text(
+                    text = "清空",
+                    style = PaperTypography.labelLarge,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .iosClick { showEmptyConfirm = true }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.width(72.dp))
+            }
+        }
+        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outline)
+
+        if (diaries.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+            ) {
+                Column(modifier = Modifier.padding(top = 64.dp)) {
+                    Text(
+                        text = "废纸篓是空的。",
+                        style = InkType.readerTitle(),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "被撕下的书页会在这里停留三十天。",
+                        style = PaperTypography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
+            ) {
+                items(diaries, key = { it.id }) { diary ->
+                    val deletedTimeStr = remember(diary.deletedAt) {
+                        if (diary.deletedAt != null) {
+                            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(diary.deletedAt))
+                        } else {
+                            ""
+                        }
+                    }
+
+                    Column(modifier = Modifier.padding(vertical = 14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "撕于 $deletedTimeStr",
+                                style = InkType.meta,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row {
+                                Box(
+                                    modifier = Modifier.iosIconClick { viewModel.restore(diary.id) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Restore,
+                                        contentDescription = "放回书中",
+                                        tint = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Box(
+                                    modifier = Modifier.iosIconClick { pendingHardDelete = diary },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.DeleteForever,
+                                        contentDescription = "永久销毁",
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        DiaryEntryBlock(
+                            diary = diary,
+                            onClick = {},
+                            onLongClick = {}
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outline)
+                    }
+                }
+            }
+        }
+    }
+
+    // 清空确认
+    IosModalDialog(
+        visible = showEmptyConfirm,
+        title = "清空废纸篓",
+        message = "所有被撕下的书页将被永久焚毁，无法恢复。",
+        confirmText = "焚毁",
+        cancelText = "取消",
+        isDestructive = true,
+        onConfirm = {
+            viewModel.emptyTrash()
+            showEmptyConfirm = false
+        },
+        onDismissRequest = { showEmptyConfirm = false }
+    )
+
+    // 单条永久销毁确认（修复：原先无确认）
+    IosModalDialog(
+        visible = pendingHardDelete != null,
+        title = "永久销毁这一页",
+        message = "这一页将被永久焚毁，无法恢复。",
+        confirmText = "焚毁",
+        cancelText = "取消",
+        isDestructive = true,
+        onConfirm = {
+            pendingHardDelete?.let { viewModel.permanentDelete(it.id) }
+            pendingHardDelete = null
+        },
+        onDismissRequest = { pendingHardDelete = null }
+    )
+}
