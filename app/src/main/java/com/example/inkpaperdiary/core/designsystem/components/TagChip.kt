@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.CapsuleShape
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
 import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 

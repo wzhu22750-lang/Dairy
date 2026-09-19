@@ -28,7 +28,6 @@ import androidx.compose.ui.window.Dialog
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
 import com.example.inkpaperdiary.core.designsystem.InkPalette
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
 import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 
@@ -152,7 +151,7 @@ fun IosModalDialog(
                             text = message,
                             fontSize = 13.sp,
                             fontFamily = SansFontFamily,
-                            color = PaperColors.MonoGray500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp,
                             textAlign = TextAlign.Center
                         )
@@ -337,7 +336,7 @@ fun IosDialogTextField(
                         text = placeholder,
                         fontSize = 13.sp,
                         fontFamily = SansFontFamily,
-                        color = PaperColors.MonoGray400
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                 }
                 innerTextField()

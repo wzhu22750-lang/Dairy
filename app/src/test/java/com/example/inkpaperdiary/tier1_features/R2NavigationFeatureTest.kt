@@ -3,7 +3,8 @@ package com.example.inkpaperdiary.tier1_features
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.inkpaperdiary.ui.navigation.Screen
+import com.example.inkpaperdiary.ui.navigation.AppDestination
+import com.example.inkpaperdiary.ui.navigation.IosTab
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -210,48 +211,45 @@ class R2NavigationFeatureTest {
     // ---------------------------------------------------------------------------------------------
 
     @Test
-    fun testF8_RootTabRouteDefinitions() {
-        assertEquals("timeline", Screen.Timeline.route)
-        assertEquals("calendar", Screen.Calendar.route)
-        assertEquals("on_this_day", Screen.OnThisDay.route)
-        assertEquals("settings", Screen.Settings.route)
+    fun testF8_RootTabContracts() {
+        // 路由字符串层已由类型化 4 栏 Tab 取代
+        assertEquals(4, IosTab.entries.size)
+        assertEquals(IosTab.JOURNAL, IosTab.entries[0])
+        assertEquals(IosTab.CALENDAR, IosTab.entries[1])
+        assertEquals(IosTab.MEMORIES, IosTab.entries[2])
+        assertEquals(IosTab.SETTINGS, IosTab.entries[3])
     }
 
     @Test
-    fun testF8_ModalPushRouteDefinitions() {
-        assertEquals("stats", Screen.Stats.route)
-        assertEquals("search", Screen.Search.route)
-        assertEquals("trash", Screen.Trash.route)
-        assertEquals("lock", Screen.Lock.route)
+    fun testF8_ModalDestinationContracts() {
+        // 模态层目的地：Search/Stats/Trash 单例，Editor/Reader 携带数据
+        assertSame(AppDestination.Search, AppDestination.Search)
+        assertSame(AppDestination.Stats, AppDestination.Stats)
+        assertSame(AppDestination.Trash, AppDestination.Trash)
+        assertTrue(AppDestination.Editor(null) is AppDestination.Editor)
+        assertTrue(AppDestination.Reader("d1") is AppDestination.Reader)
     }
 
     @Test
-    fun testF8_EditorRouteCreationForNewDiary() {
-        val newRoute = Screen.Editor.createRoute(null)
-        assertEquals("editor/new", newRoute)
+    fun testF8_EditorDestinationForNewDiary() {
+        val newDest = AppDestination.Editor(null)
+        assertNull(newDest.diaryId)
+        assertNull(newDest.entryDate)
     }
 
     @Test
-    fun testF8_EditorRouteCreationWithSpecificDiaryId() {
+    fun testF8_EditorDestinationWithSpecificDiaryId() {
         val targetId = "11111111-2222-3333-4444-555555555555"
-        val existingRoute = Screen.Editor.createRoute(targetId)
-        assertEquals("editor/11111111-2222-3333-4444-555555555555", existingRoute)
+        val existingDest = AppDestination.Editor(targetId)
+        assertEquals(targetId, existingDest.diaryId)
     }
 
     @Test
-    fun testF8_EditorRoutePatternMatchingContract() {
-        val pattern = Screen.Editor.route
-        assertEquals("editor/{diaryId}", pattern)
-
-        val samplePath1 = "editor/new"
-        val samplePath2 = "editor/test_id_999"
-
-        assertTrue(samplePath1.startsWith("editor/"))
-        assertTrue(samplePath2.startsWith("editor/"))
-        val extractedId1 = samplePath1.removePrefix("editor/")
-        val extractedId2 = samplePath2.removePrefix("editor/")
-
-        assertEquals("new", extractedId1)
-        assertEquals("test_id_999", extractedId2)
+    fun testF8_EditorDestinationTypeSafetyContract() {
+        // 字符串路由解析被类型安全的目的地取代：id 原样携带、无需编解码
+        val specialId = "diary#special@2026/09"
+        val dest = AppDestination.Editor(specialId)
+        assertEquals(specialId, dest.diaryId)
+        assertEquals(dest, AppDestination.Editor(specialId))
     }
 }

@@ -1,14 +1,14 @@
 {
   "schemaVersion": "mimosa-hook-status/v1",
-  "recordedAt": "2026-09-19T18:17:21.175Z",
+  "recordedAt": "2026-09-19T18:23:59.831Z",
   "sessionId": "sess_0bbe0a48-726a-4809-9648-65f7818fd7f0",
   "event": "PostToolUse",
-  "toolName": "Edit",
-  "file": "app/src/main/java/com/example/inkpaperdiary/core/designsystem/components/IosModalDialog.kt",
+  "toolName": "Write",
+  "file": "app/src/main/java/com/example/inkpaperdiary/ui/navigation/NavRoutes.kt",
   "outcome": "clear",
   "coverage": "complete",
   "findingCount": 0,
-  "durationMs": 6,
+  "durationMs": 4,
   "hostState": "hook_complete",
   "reportHint": ".mimosa/reports/"
 }

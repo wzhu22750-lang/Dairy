@@ -27,8 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,8 +35,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.inkpaperdiary.core.designsystem.InkType
-import com.example.inkpaperdiary.core.designsystem.SansFontFamily
-import com.example.inkpaperdiary.core.designsystem.SerifFontFamily
 import com.example.inkpaperdiary.core.designsystem.components.IosDateTimePickerSheet
 import com.example.inkpaperdiary.core.designsystem.components.IosDialogAction
 import com.example.inkpaperdiary.core.designsystem.components.IosDialogTextField
@@ -448,20 +444,12 @@ fun EditorScreen(
 internal fun wordCount(text: String): Int {
     val trimmed = text.trim()
     if (trimmed.isEmpty()) return 0
-    val cjk = trimmed.count { codePoint -> isCjk(codePoint.code) }
+    val cjk = trimmed.count { it.code in 0x3400..0x4DBF || it.code in 0x4E00..0x9FFF ||
+        it.code in 0xF900..0xFAFF || it.code in 0x3040..0x30FF || it.code in 0xAC00..0xD7AF }
     val latin = Regex("[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*")
         .findAll(trimmed)
         .count()
     return cjk + latin
-}
-
-private fun isCjk(codePoint: Int): Boolean {
-    val isCjkRange = Character.toChars(codePoint).size == 1
-    if (!isCjkRange) return false
-    val ch = codePoint.toChar()
-    val code = ch.code
-    return code in 0x3400..0x4DBF || code in 0x4E00..0x9FFF ||
-        code in 0xF900..0xFAFF || code in 0x3040..0x30FF || code in 0xAC00..0xD7AF
 }
 
 /** 编辑器插图行：小缩略图 + 删除角标。 */

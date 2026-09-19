@@ -57,7 +57,7 @@ fun IosListSection(
                 text = headerText.uppercase(),
                 style = PaperTypography.bodySmall.copy(
                     fontSize = 12.sp,
-                    color = PaperColors.MonoGray500,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Medium
                 ),
@@ -83,7 +83,7 @@ fun IosListSection(
                 text = footer,
                 style = PaperTypography.bodySmall.copy(
                     fontSize = 13.sp,
-                    color = PaperColors.MonoGray500,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
                 ),
                 modifier = Modifier.padding(start = 16.dp, top = 6.dp, bottom = 10.dp)
@@ -122,7 +122,7 @@ fun IosListRow(
                     text = sub,
                     style = PaperTypography.bodySmall.copy(
                         fontSize = 13.sp,
-                        color = PaperColors.MonoGray500
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -246,7 +246,7 @@ fun IosNavigationRow(
                         text = value,
                         style = PaperTypography.bodyLarge.copy(
                             fontSize = 15.sp,
-                            color = PaperColors.MonoGray500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -256,7 +256,7 @@ fun IosNavigationRow(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                     contentDescription = null,
                     modifier = Modifier.size(13.dp),
-                    tint = PaperColors.MonoGray400
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
         }

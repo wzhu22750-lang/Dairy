@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
 import com.example.inkpaperdiary.core.designsystem.CapsuleShape
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
 import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick
@@ -392,7 +391,7 @@ private fun IosCalendarPickerView(
                     fontSize = 12.sp,
                     fontFamily = SansFontFamily,
                     fontWeight = FontWeight.Medium,
-                    color = PaperColors.MonoGray500,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.width(36.dp)
                 )
@@ -684,7 +683,7 @@ private fun IosWheelScrollColumn(
                     color = if (isCurrent) {
                         MaterialTheme.colorScheme.onSurface
                     } else {
-                        PaperColors.MonoGray500.copy(alpha = 0.6f)
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     }
                 )
             }

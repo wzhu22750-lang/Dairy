@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
 import com.example.inkpaperdiary.core.designsystem.InkPalette
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
 import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 
@@ -110,7 +109,7 @@ fun IosActionSheet(
                                     fontSize = 13.sp,
                                     fontFamily = SansFontFamily,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = PaperColors.MonoGray500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -120,7 +119,7 @@ fun IosActionSheet(
                                     text = message,
                                     fontSize = 12.sp,
                                     fontFamily = SansFontFamily,
-                                    color = PaperColors.MonoGray500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
                                 )
                             }

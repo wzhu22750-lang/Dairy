@@ -9,7 +9,7 @@ import com.example.inkpaperdiary.domain.model.Diary
 import com.example.inkpaperdiary.domain.model.SyncStatus
 import com.example.inkpaperdiary.domain.model.Tag
 import com.example.inkpaperdiary.domain.model.Weather
-import com.example.inkpaperdiary.ui.navigation.Screen
+import com.example.inkpaperdiary.ui.navigation.AppDestination
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -33,9 +33,9 @@ class RealWorldApplicationScenariosTest {
         var activeTab = "JOURNAL"
         assertEquals("JOURNAL", activeTab)
 
-        // Step 2: User taps top-right Compose action in navigation bar -> routes to Editor
-        val editorRoute = Screen.Editor.createRoute(null)
-        assertEquals("editor/new", editorRoute)
+        // Step 2: User taps the writing action -> editor opens for a new diary
+        val editorDest = AppDestination.Editor(null)
+        assertNull(editorDest.diaryId)
 
         // Step 3: In Editor, user selects Weather (SUNNY) and custom entry Date
         val customDate = 1718000000000L
@@ -63,8 +63,8 @@ class RealWorldApplicationScenariosTest {
         )
 
         // Step 6: Navigation pops back to Journal timeline stream
-        val currentRoute = Screen.Timeline.route
-        assertEquals("timeline", currentRoute)
+        val currentTab = "JOURNAL"
+        assertEquals("JOURNAL", currentTab)
 
         // Step 7: Verification in Journal stream
         assertTrue(diary.isPinned)
@@ -189,8 +189,8 @@ class RealWorldApplicationScenariosTest {
         assertTrue(diary.isDeleted)
 
         // Step 3: User navigates to TrashScreen via Settings Section 4
-        val trashRoute = Screen.Trash.route
-        assertEquals("trash", trashRoute)
+        val trashDest: AppDestination = AppDestination.Trash
+        assertEquals(AppDestination.Trash, trashDest)
 
         // Step 4: User recovers diary from Trash
         diary = diary.copy(

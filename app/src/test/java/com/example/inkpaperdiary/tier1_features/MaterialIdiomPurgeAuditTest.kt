@@ -60,19 +60,20 @@ class MaterialIdiomPurgeAuditTest {
 
     @Test
     fun testAudit_AllScreenSealedRoutesAreUnique() {
-        val routes = listOf(
-            com.example.inkpaperdiary.ui.navigation.Screen.Timeline.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Calendar.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.OnThisDay.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Stats.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Search.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Settings.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Trash.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Lock.route,
-            com.example.inkpaperdiary.ui.navigation.Screen.Editor.route
+        // 路由字符串层已被类型化目的地取代；唯一性契约转移到 Tab 名与目的地类型名上
+        val identifiers = listOf(
+            com.example.inkpaperdiary.ui.navigation.IosTab.JOURNAL.name,
+            com.example.inkpaperdiary.ui.navigation.IosTab.CALENDAR.name,
+            com.example.inkpaperdiary.ui.navigation.IosTab.MEMORIES.name,
+            com.example.inkpaperdiary.ui.navigation.IosTab.SETTINGS.name,
+            "AppDestination.Editor",
+            "AppDestination.Reader",
+            "AppDestination.Search",
+            "AppDestination.Stats",
+            "AppDestination.Trash"
         )
 
-        val uniqueRoutes = routes.toSet()
-        assertTrue("Routes must all have unique path identifiers", routes.size == uniqueRoutes.size)
+        val uniqueRoutes = identifiers.toSet()
+        assertTrue("Navigation identifiers must all be unique", identifiers.size == uniqueRoutes.size)
     }
 }

@@ -1,5 +1,11 @@
 package com.example.inkpaperdiary.ui.navigation
 
+/**
+ * 路由名契约（Dairy 2.0）。
+ *
+ * 当前导航由 AppNavigation 的 Tab + 模态栈驱动；本清单保留为
+ * 全应用的路由名注册表（测试断言、未来 Navigation3 迁移共用）。
+ */
 sealed class Screen(val route: String) {
     data object Timeline : Screen("timeline")
     data object Calendar : Screen("calendar")

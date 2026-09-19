@@ -9,7 +9,6 @@ import com.example.inkpaperdiary.core.security.AppLockManager
 import com.example.inkpaperdiary.domain.model.Diary
 import com.example.inkpaperdiary.domain.model.SyncStatus
 import com.example.inkpaperdiary.domain.model.Weather
-import com.example.inkpaperdiary.ui.navigation.Screen
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -32,21 +31,21 @@ class CrossFeaturePairwiseTest {
         assertTrue(AppLockManager.isLocked.value)
 
         // If user attempts to navigate tabs while locked, navigation route must remain on Lock screen
-        var currentRoute = Screen.Lock.route
+        var currentRoute = "lock"
         fun onTabSelected(requestedTabRoute: String) {
             if (!AppLockManager.isLocked.value) {
                 currentRoute = requestedTabRoute
             }
         }
 
-        onTabSelected(Screen.Settings.route)
-        assertEquals(Screen.Lock.route, currentRoute)
+        onTabSelected("settings")
+        assertEquals("lock", currentRoute)
 
         // After unlocking, tab navigation succeeds
         AppLockManager.unlock()
         assertFalse(AppLockManager.isLocked.value)
-        onTabSelected(Screen.Settings.route)
-        assertEquals(Screen.Settings.route, currentRoute)
+        onTabSelected("settings")
+        assertEquals("settings", currentRoute)
     }
 
     // ---------------------------------------------------------------------------------------------

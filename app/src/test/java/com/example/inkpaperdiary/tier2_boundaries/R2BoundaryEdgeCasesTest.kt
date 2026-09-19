@@ -1,6 +1,6 @@
 package com.example.inkpaperdiary.tier2_boundaries
 
-import com.example.inkpaperdiary.ui.navigation.Screen
+import com.example.inkpaperdiary.ui.navigation.AppDestination
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -46,25 +46,21 @@ class R2BoundaryEdgeCasesTest {
     }
 
     @Test
-    fun testB2_EditorRouteWithSpecialCharactersInId() {
-        // Diary ID with special URL characters, slashes, or unicode
+    fun testB2_EditorDestinationWithSpecialCharactersInId() {
+        // 类型化导航不再经过字符串路由：特殊字符 id 原样携带、无需 URL 编码
         val rawId = "diary#special@2026/09"
-        val encodedId = URLEncoder.encode(rawId, "UTF-8")
-        val route = Screen.Editor.createRoute(encodedId)
-
-        assertTrue(route.startsWith("editor/"))
-        val extracted = route.removePrefix("editor/")
-        assertEquals(encodedId, extracted)
+        val dest = AppDestination.Editor(rawId)
+        assertEquals(rawId, dest.diaryId)
     }
 
     @Test
-    fun testB2_EditorRouteWithEmptyOrNullIdFallback() {
-        // When ID is null or blank, route must resolve cleanly to 'editor/new'
-        val routeNull = Screen.Editor.createRoute(null)
-        val routeEmpty = if ("".isBlank()) Screen.Editor.createRoute(null) else Screen.Editor.createRoute("")
-
-        assertEquals("editor/new", routeNull)
-        assertEquals("editor/new", routeEmpty)
+    fun testB2_EditorDestinationWithEmptyOrNullIdFallback() {
+        // diaryId 为 null 表示"新建日记"会话
+        val destNull = AppDestination.Editor(null)
+        assertNull(destNull.diaryId)
+        // 空字符串 id 不是 null，类型系统保留原值（由上层把空串归一化为 null）
+        val destEmpty = AppDestination.Editor("")
+        assertEquals("", destEmpty.diaryId)
     }
 
     @Test
@@ -117,7 +113,7 @@ class R2BoundaryEdgeCasesTest {
         val query = "keyword=春天&tag=旅行"
         val fullUrl = "$baseRoute?$query"
 
-        assertTrue(fullUrl.startsWith(Screen.Search.route))
+        assertTrue(fullUrl.startsWith("search"))
         val queryPart = fullUrl.substringAfter("?")
         assertTrue(queryPart.contains("keyword=春天"))
         assertTrue(queryPart.contains("tag=旅行"))

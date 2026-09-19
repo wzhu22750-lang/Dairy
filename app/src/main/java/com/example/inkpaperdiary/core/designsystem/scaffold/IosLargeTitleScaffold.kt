@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
 import com.example.inkpaperdiary.core.designsystem.interaction.iosClick
 import com.example.inkpaperdiary.core.designsystem.interaction.iosIconClick

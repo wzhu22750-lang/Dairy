@@ -26,7 +26,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.PaperTypography
 import com.example.inkpaperdiary.core.designsystem.components.*
 import com.example.inkpaperdiary.core.designsystem.scaffold.IosLargeTitleItem
@@ -552,7 +551,7 @@ fun SettingsScreen(
                             text = appVersionName,
                             style = PaperTypography.bodyLarge.copy(
                                 fontSize = 15.sp,
-                                color = PaperColors.MonoGray500
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     },
