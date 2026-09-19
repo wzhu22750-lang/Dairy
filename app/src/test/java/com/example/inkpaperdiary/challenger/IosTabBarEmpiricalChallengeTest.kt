@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
-import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.interaction.IosTouchDefaults
 import com.example.inkpaperdiary.ui.navigation.AppleTabDefaults
 import com.example.inkpaperdiary.ui.navigation.AppDestination
@@ -50,17 +49,17 @@ class IosTabBarEmpiricalChallengeTest {
 
     @Test
     fun challenge_tabBar_ExactGeometryDimensions() {
-        // iOS HIG UITabBar content height is strictly 49.dp
-        assertEquals("TabBar content height must be exactly 49.dp", 49.dp, AppleTabDefaults.BarHeight)
-        assertEquals(49f, AppleTabDefaults.BarHeight.value, 0.0001f)
+        // Tab bar content height is exactly 48.dp (still >= Android 48dp minimum)
+        assertEquals("TabBar content height must be exactly 48.dp", 48.dp, AppleTabDefaults.BarHeight)
+        assertEquals(48f, AppleTabDefaults.BarHeight.value, 0.0001f)
 
-        // Hairline specular top border must be 0.5.dp
+        // Hairline top border must be 0.5.dp
         assertEquals("Hairline border width must be exactly 0.5.dp", 0.5.dp, AppleTabDefaults.HairlineBorderWidth)
         assertEquals(0.5f, AppleTabDefaults.HairlineBorderWidth.value, 0.0001f)
 
-        // Tab icon glyph bounding box must be 24.dp
-        assertEquals("Icon size must be exactly 24.dp", 24.dp, AppleTabDefaults.IconSize)
-        assertEquals(24f, AppleTabDefaults.IconSize.value, 0.0001f)
+        // Tab icon glyph bounding box must be 22.dp
+        assertEquals("Icon size must be exactly 22.dp", 22.dp, AppleTabDefaults.IconSize)
+        assertEquals(22f, AppleTabDefaults.IconSize.value, 0.0001f)
 
         // Label typography must be 10.sp
         assertEquals("Label font size must be exactly 10.sp", 10.sp, AppleTabDefaults.LabelFontSize)
@@ -68,34 +67,18 @@ class IosTabBarEmpiricalChallengeTest {
     }
 
     @Test
-    fun challenge_tabBar_TranslucencyAlphaAndColorValues() {
-        // 93.3% alpha (0xEE / 255f = 0.93333334f)
-        val expectedAlpha = 0xEE.toFloat() / 255.0f // 0.93333334f
+    fun challenge_tabBar_BarBackgroundColorDeterminism() {
+        // Ink 设计契约：顶/底栏颜色来自 InkPalette，97% 纸白 / 97% 柔和黑
+        val lightBg = AppleMaterials.barBackgroundColor(isDark = false)
+        val darkBg = AppleMaterials.barBackgroundColor(isDark = true)
 
-        val lightBg = AppleTabDefaults.LightBarBackground
-        val darkBg = AppleTabDefaults.DarkBarBackground
+        assertEquals("Light bar background must be 0xF7FBFAF7", Color(0xF7FBFAF7), lightBg)
+        assertEquals("Dark bar background must be 0xF7151412", Color(0xF7151412), darkBg)
+        assertNotEquals("Light and dark bar backgrounds must differ", lightBg, darkBg)
 
-        assertEquals("Light background ARGB must be 0xEEF2F2F7", Color(0xEEF2F2F7), lightBg)
-        assertEquals("Dark background ARGB must be 0xEE000000", Color(0xEE000000), darkBg)
-
-        // Verify alpha precision
-        assertEquals(expectedAlpha, lightBg.alpha, 0.002f)
-        assertEquals(expectedAlpha, darkBg.alpha, 0.002f)
-        assertTrue("Light bar alpha must be >= 0.93f", lightBg.alpha >= 0.93f)
-        assertTrue("Dark bar alpha must be >= 0.93f", darkBg.alpha >= 0.93f)
-        assertTrue("Light bar alpha must be <= 0.94f", lightBg.alpha <= 0.94f)
-        assertTrue("Dark bar alpha must be <= 0.94f", darkBg.alpha <= 0.94f)
-
-        // Verify AppleMaterials.barBackgroundColor pure function parity
-        assertEquals("AppleMaterials light bar background must match AppleTabDefaults",
-            lightBg, AppleMaterials.barBackgroundColor(isDark = false))
-        assertEquals("AppleMaterials dark bar background must match AppleTabDefaults",
-            darkBg, AppleMaterials.barBackgroundColor(isDark = true))
-
-        // System colors for active & inactive tab states
-        assertEquals("System Blue tint must be #007AFF", Color(0xFF007AFF), AppleTabDefaults.SystemBlue)
-        assertEquals("System Gray tint must match PaperColors.MonoGray500", PaperColors.MonoGray500, AppleTabDefaults.SystemGray)
-        assertEquals(Color(0xFF8E8E93), AppleTabDefaults.SystemGray)
+        // 两种模式都是近乎不透明的微透色
+        assertTrue("Light bar alpha must be >= 0.95f", lightBg.alpha >= 0.95f)
+        assertTrue("Dark bar alpha must be >= 0.95f", darkBg.alpha >= 0.95f)
 
         // Color transition animation spec must be 200ms
         assertEquals(200, (AppleTabDefaults.ColorTransitionSpec as? androidx.compose.animation.core.TweenSpec)?.durationMillis)
@@ -126,15 +109,15 @@ class IosTabBarEmpiricalChallengeTest {
 
         // Verify order, labels, and exact names
         assertEquals(IosTab.JOURNAL, entries[0])
-        assertEquals("日记", entries[0].label)
+        assertEquals("书页", entries[0].label)
         assertEquals("JOURNAL", entries[0].name)
 
         assertEquals(IosTab.CALENDAR, entries[1])
-        assertEquals("日历", entries[1].label)
+        assertEquals("目录", entries[1].label)
         assertEquals("CALENDAR", entries[1].name)
 
         assertEquals(IosTab.MEMORIES, entries[2])
-        assertEquals("回忆", entries[2].label)
+        assertEquals("回声", entries[2].label)
         assertEquals("MEMORIES", entries[2].name)
 
         assertEquals(IosTab.SETTINGS, entries[3])

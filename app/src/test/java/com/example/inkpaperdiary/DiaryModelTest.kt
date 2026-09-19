@@ -1,7 +1,6 @@
 package com.example.inkpaperdiary
 
 import com.example.inkpaperdiary.domain.model.Diary
-import com.example.inkpaperdiary.domain.model.Mood
 import com.example.inkpaperdiary.domain.model.SyncStatus
 import com.example.inkpaperdiary.domain.model.Weather
 import org.junit.Assert.assertEquals
@@ -22,7 +21,6 @@ class DiaryModelTest {
         val diary = Diary(
             title = "悠闲午后",
             contentMarkdown = markdown,
-            mood = Mood.HAPPY,
             weather = Weather.SUNNY
         )
 
@@ -36,9 +34,6 @@ class DiaryModelTest {
 
     @Test
     fun testMoodAndWeatherFallback() {
-        assertEquals(Mood.HAPPY, Mood.fromCode("HAPPY"))
-        assertEquals(Mood.CALM, Mood.fromCode("unknown_mood"))
-
         assertEquals(Weather.RAINY, Weather.fromCode("RAINY"))
         assertEquals(Weather.SUNNY, Weather.fromCode("unknown_weather"))
 

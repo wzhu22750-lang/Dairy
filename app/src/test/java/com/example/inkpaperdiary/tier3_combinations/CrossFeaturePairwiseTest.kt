@@ -7,7 +7,6 @@ import com.example.inkpaperdiary.core.designsystem.MaterialThickness
 import com.example.inkpaperdiary.core.designsystem.VibrancyLevel
 import com.example.inkpaperdiary.core.security.AppLockManager
 import com.example.inkpaperdiary.domain.model.Diary
-import com.example.inkpaperdiary.domain.model.Mood
 import com.example.inkpaperdiary.domain.model.SyncStatus
 import com.example.inkpaperdiary.domain.model.Weather
 import com.example.inkpaperdiary.ui.navigation.Screen
@@ -56,9 +55,9 @@ class CrossFeaturePairwiseTest {
     @Test
     fun testPair2_SegmentedFilterInteractingWithPinnedCardsAndTouchPhysics() {
         val diaries = listOf(
-            Diary(id = "1", title = "置顶日记", isPinned = true, mood = Mood.HAPPY),
-            Diary(id = "2", title = "普通日记", isPinned = false, mood = Mood.CALM),
-            Diary(id = "3", title = "另一篇置顶", isPinned = true, mood = Mood.ENERGETIC)
+            Diary(id = "1", title = "置顶日记", isPinned = true),
+            Diary(id = "2", title = "普通日记", isPinned = false),
+            Diary(id = "3", title = "另一篇置顶", isPinned = true)
         )
 
         var selectedFilter = "置顶"

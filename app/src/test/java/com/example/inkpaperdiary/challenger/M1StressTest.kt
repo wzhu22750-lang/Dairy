@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
+import com.example.inkpaperdiary.core.designsystem.InkPalette
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
 import com.example.inkpaperdiary.core.designsystem.VibrancyLevel
 import com.example.inkpaperdiary.core.designsystem.interaction.IosTouchDefaults
@@ -325,24 +326,17 @@ class M1StressTest {
     }
 
     // =============================================================================================
-    // 4. Apple Materials & Vibrancy Comprehensive Verification (AppleMaterials)
+    // 4. 纸张材质与墨色层级综合验证 (AppleMaterials / Dairy 2.0)
     // =============================================================================================
 
     @Test
     fun testAppleMaterials_AllThicknessLevelsMonotonicity() {
-        val lightAlphas = MaterialThickness.entries.map {
-            AppleMaterials.backgroundColor(it, isDark = false).alpha
-        }
-        val darkAlphas = MaterialThickness.entries.map {
-            AppleMaterials.backgroundColor(it, isDark = true).alpha
-        }
-
-        // Strictly increasing alphas
-        for (i in 0 until lightAlphas.size - 1) {
-            assertTrue("Light mode thickness $i must be less opaque than ${i + 1}",
-                lightAlphas[i] < lightAlphas[i + 1])
-            assertTrue("Dark mode thickness $i must be less opaque than ${i + 1}",
-                darkAlphas[i] < darkAlphas[i + 1])
+        // 纸张化后：薄材质 = 主纸面，厚材质 = 浮层纸面，全部实心不透明
+        MaterialThickness.entries.forEach { thickness ->
+            assertEquals("Light mode $thickness must be solid paper",
+                1f, AppleMaterials.backgroundColor(thickness, isDark = false).alpha, 0.001f)
+            assertEquals("Dark mode $thickness must be solid paper",
+                1f, AppleMaterials.backgroundColor(thickness, isDark = true).alpha, 0.001f)
         }
     }
 
@@ -351,9 +345,9 @@ class M1StressTest {
         val lightBar = AppleMaterials.barBackgroundColor(isDark = false)
         val darkBar = AppleMaterials.barBackgroundColor(isDark = true)
 
-        // 0xEE = 238 / 255 = 0.9333f (~93% translucency per Apple HIG)
-        assertEquals(0.933f, lightBar.alpha, 0.005f)
-        assertEquals(0.933f, darkBar.alpha, 0.005f)
+        // 0xF7 = 247 / 255 ≈ 0.969（97% 纸色，微透出滚动内容）
+        assertEquals(0.969f, lightBar.alpha, 0.005f)
+        assertEquals(0.969f, darkBar.alpha, 0.005f)
     }
 
     @Test
@@ -361,8 +355,8 @@ class M1StressTest {
         val lightSep = AppleMaterials.separatorColor(isDark = false)
         val darkSep = AppleMaterials.separatorColor(isDark = true)
 
-        assertEquals(Color(0x1F000000), lightSep)
-        assertEquals(Color(0x2EFFFFFF), darkSep)
+        assertEquals(InkPalette.HairlineLight, lightSep)
+        assertEquals(InkPalette.HairlineDark, darkSep)
     }
 
     @Test
@@ -384,9 +378,9 @@ class M1StressTest {
         val q = AppleMaterials.vibrancyColor(VibrancyLevel.QUATERNARY, isDark = false).alpha
 
         assertEquals(1.0f, p, 0.01f)
-        assertEquals(0.60f, s, 0.01f)
-        assertEquals(0.30f, t, 0.01f)
-        assertEquals(0.18f, q, 0.01f)
+        assertEquals(0.62f, s, 0.01f)
+        assertEquals(0.40f, t, 0.01f)
+        assertEquals(0.25f, q, 0.01f)
 
         assertTrue(p > s)
         assertTrue(s > t)
@@ -401,6 +395,7 @@ class M1StressTest {
         assertEquals(testColor.red, vibrantColor.red, 0.0001f)
         assertEquals(testColor.green, vibrantColor.green, 0.0001f)
         assertEquals(testColor.blue, vibrantColor.blue, 0.0001f)
-        assertEquals(0.60f, vibrantColor.alpha, 0.0001f)
+        // sRGB Color 将 alpha 量化到 8bit（0.62*255 ≈ 158 → 0.6196），放宽精度
+        assertEquals(0.62f, vibrantColor.alpha, 0.002f)
     }
 }

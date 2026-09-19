@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.example.inkpaperdiary.domain.model.Diary
-import com.example.inkpaperdiary.domain.model.Mood
 import com.example.inkpaperdiary.domain.model.Tag
 import com.example.inkpaperdiary.domain.model.Weather
 import kotlinx.coroutines.Dispatchers
@@ -157,7 +156,6 @@ object TxtDiaryImporter {
             ?: System.currentTimeMillis()
 
         val weather = detectWeather(headerLine) ?: detectWeatherInLines(bodyLines.take(3)) ?: Weather.SUNNY
-        val mood = detectMood(headerLine) ?: detectMoodInLines(bodyLines.take(3)) ?: Mood.CALM
 
         var title = extractTitleFromHeader(headerLine)
         val bodyBuilder = mutableListOf<String>()
@@ -198,7 +196,6 @@ object TxtDiaryImporter {
             entryDate = entryDate,
             createdAt = entryDate,
             updatedAt = System.currentTimeMillis(),
-            mood = mood,
             weather = weather,
             tags = tags
         )
@@ -267,7 +264,6 @@ object TxtDiaryImporter {
 
         val contentMarkdown = bodyBuilder.joinToString("\n").trim()
         val weather = detectWeatherInLines(lines.take(5)) ?: Weather.SUNNY
-        val mood = detectMoodInLines(lines.take(5)) ?: Mood.CALM
         val tags = extractTags(contentMarkdown)
 
         return Diary(
@@ -276,7 +272,6 @@ object TxtDiaryImporter {
             entryDate = entryDate,
             createdAt = entryDate,
             updatedAt = System.currentTimeMillis(),
-            mood = mood,
             weather = weather,
             tags = tags
         )
@@ -381,11 +376,12 @@ object TxtDiaryImporter {
         // 移除星期
         clean = clean.replace(WEEKDAY_PATTERN.toRegex(), " ")
 
-        // 移除天气与心情关键词
+        // 移除天气关键词
         val weatherKeywords = listOf("晴天", "晴", "多云", "阴天", "阴", "暴雨", "大雨", "小雨", "雨", "大雪", "小雪", "雪", "大风", "风")
         for (kw in weatherKeywords) {
             clean = clean.replace(kw, " ")
         }
+        // 移除遗留的心情词（心情系统已移除，仅作导入文本的标题卫生处理）
         val moodKeywords = listOf("开心", "高兴", "喜悦", "平静", "安宁", "充实", "感悟", "疲惫", "好累", "累", "难过", "伤心", "焦虑", "烦躁")
         for (kw in moodKeywords) {
             clean = clean.replace(kw, " ")
@@ -408,30 +404,10 @@ object TxtDiaryImporter {
         }
     }
 
-    fun detectMood(text: String): Mood? {
-        return when {
-            listOf("开心", "高兴", "喜", "乐", "兴奋", "愉快", "欣喜").any { text.contains(it) } -> Mood.HAPPY
-            listOf("平", "安", "静", "悠", "淡", "常").any { text.contains(it) } -> Mood.CALM
-            listOf("充实", "悟", "思", "灵感", "振奋", "收获").any { text.contains(it) } -> Mood.FULFILLED
-            listOf("累", "疲", "倦", "乏").any { text.contains(it) } -> Mood.TIRED
-            listOf("难过", "伤心", "悲", "哀", "哭", "沮丧", "低落").any { text.contains(it) } -> Mood.SAD
-            listOf("焦", "烦", "躁", "忧", "慌", "急").any { text.contains(it) } -> Mood.ANXIOUS
-            else -> null
-        }
-    }
-
     private fun detectWeatherInLines(lines: List<String>): Weather? {
         for (line in lines) {
             val w = detectWeather(line)
             if (w != null) return w
-        }
-        return null
-    }
-
-    private fun detectMoodInLines(lines: List<String>): Mood? {
-        for (line in lines) {
-            val m = detectMood(line)
-            if (m != null) return m
         }
         return null
     }

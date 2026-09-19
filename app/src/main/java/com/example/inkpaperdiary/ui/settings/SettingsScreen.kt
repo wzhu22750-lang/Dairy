@@ -54,11 +54,17 @@ enum class ChangePinStep {
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateBack: (() -> Unit)? = null,
-    onNavigateToTrash: () -> Unit
+    onNavigateToTrash: () -> Unit,
+    onNavigateToStats: () -> Unit = {},
+    readingSettingsViewModel: com.example.inkpaperdiary.ui.reader.ReadingSettingsViewModel? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val syncMessage by viewModel.syncMessage.collectAsState()
     val context = LocalContext.current
+
+    // 阅读排版设置（真实持久化；为空时仅展示当前值不可调）
+    val readingSettings = readingSettingsViewModel?.settings?.collectAsState()?.value
+        ?: com.example.inkpaperdiary.core.designsystem.ReadingSettings()
 
     val scrollState = rememberScrollState()
     val scrollOffset = rememberScrollStateOffset(scrollState)
@@ -165,10 +171,7 @@ fun SettingsScreen(
     var showRestoreSheet by remember { mutableStateOf(false) }
 
     var showThemeSheet by remember { mutableStateOf(false) }
-    var selectedThemeTitle by remember { mutableStateOf("跟随系统") }
-
-    var showFontSheet by remember { mutableStateOf(false) }
-    var selectedFontTitle by remember { mutableStateOf("系统无衬线 (San Francisco)") }
+    var showReadingSheet by remember { mutableStateOf(false) }
 
     var showClearCacheDialog by remember { mutableStateOf(false) }
 
@@ -234,8 +237,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.CloudSync,
-                            backgroundColor = Color(0xFF007AFF),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = {
@@ -254,8 +256,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Sync,
-                            backgroundColor = Color(0xFF5856D6),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = {
@@ -284,8 +285,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Schedule,
-                            backgroundColor = Color(0xFF34C759),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     showDivider = true
@@ -299,8 +299,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.SaveAlt,
-                            backgroundColor = Color(0xFF007AFF),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = { showBackupSheet = true },
@@ -315,8 +314,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.FileUpload,
-                            backgroundColor = Color(0xFF5856D6),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = { showRestoreSheet = true },
@@ -350,8 +348,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Lock,
-                            backgroundColor = Color(0xFFFF9500),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     showDivider = uiState.appLockEnabled
@@ -366,8 +363,7 @@ fun SettingsScreen(
                         icon = {
                             IosSquircleIconBox(
                                 icon = Icons.Outlined.Key,
-                                backgroundColor = Color(0xFFFF9500),
-                                iconTint = Color.White
+                                iconTint = MaterialTheme.colorScheme.onBackground
                             )
                         },
                         onClick = {
@@ -388,8 +384,7 @@ fun SettingsScreen(
                         icon = {
                             IosSquircleIconBox(
                                 icon = Icons.Outlined.Fingerprint,
-                                backgroundColor = Color(0xFF32ADE6),
-                                iconTint = Color.White
+                                iconTint = MaterialTheme.colorScheme.onBackground
                             )
                         },
                         showDivider = true
@@ -403,8 +398,7 @@ fun SettingsScreen(
                         icon = {
                             IosSquircleIconBox(
                                 icon = Icons.Outlined.Timer,
-                                backgroundColor = Color(0xFFFF9500),
-                                iconTint = Color.White
+                                iconTint = MaterialTheme.colorScheme.onBackground
                             )
                         },
                         onClick = { showAutoLockSheet = true },
@@ -417,42 +411,43 @@ fun SettingsScreen(
             // SECTION 3: 外观与排版 (Appearance & Typography)
             // =================================================================================
             IosListSection(
-                title = "外观与排版",
-                footer = "定制应用主题呈现、正文阅读排版字体以及书写信笺底纹样式。"
+                title = "纸面与排版",
+                footer = "阅读排版与主题全局生效：字体、字号、行距、页宽亦可随时在阅读页的 Aa 中调节。"
             ) {
-                // Row 3.1: Theme Mode
+                // Row 3.1: Theme Mode (真实持久化)
                 IosNavigationRow(
-                    title = "主题外观",
-                    subtitle = "跟随系统自动切换或锁定深浅色模式",
-                    value = selectedThemeTitle,
+                    title = "纸面",
+                    subtitle = "纸张白或夜间的柔和黑",
+                    value = readingSettings.themeMode.label,
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Palette,
-                            backgroundColor = Color(0xFFAF52DE),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = { showThemeSheet = true },
                     showDivider = true
                 )
 
-                // Row 3.2: Typography Font
+                // Row 3.2: Reading Typography (打开阅读设置面板)
                 IosNavigationRow(
-                    title = "正文字体",
-                    subtitle = "日记阅读与编辑排版字体",
-                    value = selectedFontTitle,
+                    title = "阅读排版",
+                    subtitle = "字体 · 字号 · 行距 · 页宽",
+                    value = when (readingSettings.font) {
+                        com.example.inkpaperdiary.core.designsystem.ReaderFont.SERIF -> "衬线"
+                        com.example.inkpaperdiary.core.designsystem.ReaderFont.SANS -> "无衬线"
+                    },
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.TextFields,
-                            backgroundColor = Color(0xFF007AFF),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
-                    onClick = { showFontSheet = true },
+                    onClick = { showReadingSheet = true },
                     showDivider = true
                 )
 
-                // Row 3.3: Paper Pattern Segmented Control (Last row: no divider)
+                // Row 3.3: 书写信笺底纹 (Last row: no divider)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -465,8 +460,7 @@ fun SettingsScreen(
                     ) {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Description,
-                            backgroundColor = Color(0xFFFF9500),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
                             text = "书写信笺底纹",
@@ -496,18 +490,32 @@ fun SettingsScreen(
             // =================================================================================
             IosListSection(
                 title = "数据与关于",
-                footer = "已删除的日记将在回收站保留 30 天。缓存清理仅删除临时导出的归档包与缩略图。"
+                footer = "已删除的日记将在废纸篓保留 30 天。缓存清理仅删除临时导出的归档包与缩略图。"
             ) {
+                // Row 4.0: 书的刻度（统计，刻意降低存在感）
+                IosNavigationRow(
+                    title = "书的刻度",
+                    subtitle = "连续书写 · 页数 · 字数",
+                    value = "查看",
+                    icon = {
+                        IosSquircleIconBox(
+                            icon = Icons.Outlined.BarChart,
+                            iconTint = MaterialTheme.colorScheme.onBackground
+                        )
+                    },
+                    onClick = onNavigateToStats,
+                    showDivider = true
+                )
+
                 // Row 4.1: Recycle Bin Navigation
                 IosNavigationRow(
-                    title = "日记回收站",
-                    subtitle = "查看与恢复 30 天内删除的日记条目",
+                    title = "废纸篓",
+                    subtitle = "查看与恢复 30 天内撕下的书页",
                     value = "查看",
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Delete,
-                            backgroundColor = Color(0xFFFF3B30),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = onNavigateToTrash,
@@ -522,8 +530,7 @@ fun SettingsScreen(
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.CleaningServices,
-                            backgroundColor = Color(0xFFFF9500),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = { showClearCacheDialog = true },
@@ -532,13 +539,12 @@ fun SettingsScreen(
 
                 // Row 4.3: App Version & About (Last row: showDivider = false)
                 IosListRow(
-                    title = "关于 InkPaperDiary",
-                    subtitle = "极简黑白 · Apple HIG 规范 · 离线优先",
+                    title = "关于 Dairy",
+                    subtitle = "一本安静的私人书 · 离线优先",
                     icon = {
                         IosSquircleIconBox(
                             icon = Icons.Outlined.Info,
-                            backgroundColor = Color(0xFF8E8E93),
-                            iconTint = Color.White
+                            iconTint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     trailing = {
@@ -766,60 +772,39 @@ fun SettingsScreen(
         onDismissRequest = { showAutoLockSheet = false }
     )
 
-    // 6. Theme Mode Action Sheet (IosActionSheet)
+    // 6. Theme Mode Action Sheet（真实持久化到阅读设置）
     IosActionSheet(
         visible = showThemeSheet,
-        title = "选择主题模式",
-        message = "设定应用在不同光线环境下的色彩呈现",
+        title = "纸面",
+        message = "跟随系统、纸张白，或夜间的柔和黑",
         actions = listOf(
-            IosActionItem(
-                title = "跟随系统",
-                isChecked = selectedThemeTitle == "跟随系统"
-            ) {
-                selectedThemeTitle = "跟随系统"
-                showThemeSheet = false
-            },
-            IosActionItem(
-                title = "浅色模式",
-                isChecked = selectedThemeTitle == "浅色模式"
-            ) {
-                selectedThemeTitle = "浅色模式"
-                showThemeSheet = false
-            },
-            IosActionItem(
-                title = "深色模式",
-                isChecked = selectedThemeTitle == "深色模式"
-            ) {
-                selectedThemeTitle = "深色模式"
-                showThemeSheet = false
+            com.example.inkpaperdiary.core.designsystem.ThemeMode.entries.map { mode ->
+                IosActionItem(
+                    title = mode.label,
+                    isChecked = readingSettings.themeMode == mode
+                ) {
+                    readingSettingsViewModel?.setThemeMode(mode)
+                    showThemeSheet = false
+                }
             }
-        ),
+        ).flatten(),
         onDismissRequest = { showThemeSheet = false }
     )
 
-    // 7. Typography Font Action Sheet (IosActionSheet)
-    IosActionSheet(
-        visible = showFontSheet,
-        title = "选择正文字体",
-        message = "定制日记阅读与书写排版字体",
-        actions = listOf(
-            IosActionItem(
-                title = "系统无衬线 (San Francisco)",
-                isChecked = selectedFontTitle.startsWith("系统无衬线")
-            ) {
-                selectedFontTitle = "系统无衬线 (San Francisco)"
-                showFontSheet = false
-            },
-            IosActionItem(
-                title = "经典宋体 / 衬线体 (Serif)",
-                isChecked = selectedFontTitle.startsWith("经典宋体")
-            ) {
-                selectedFontTitle = "经典宋体 / 衬线体 (Serif)"
-                showFontSheet = false
-            }
-        ),
-        onDismissRequest = { showFontSheet = false }
-    )
+    // 7.5 阅读排版面板（Aa：字体/字号/行距/页宽/纸面，全局持久化）
+    if (readingSettingsViewModel != null) {
+        com.example.inkpaperdiary.ui.reader.ReadingSettingsSheet(
+            visible = showReadingSheet,
+            settings = readingSettings,
+            onDismiss = { showReadingSheet = false },
+            onSetFont = { readingSettingsViewModel.setFont(it) },
+            onIncreaseFont = { readingSettingsViewModel.increaseFontScale() },
+            onDecreaseFont = { readingSettingsViewModel.decreaseFontScale() },
+            onSetLineSpacing = { readingSettingsViewModel.setLineSpacing(it) },
+            onSetPageWidth = { readingSettingsViewModel.setPageWidth(it) },
+            onSetThemeMode = { readingSettingsViewModel.setThemeMode(it) }
+        )
+    }
 
     // 8. Clear Cache Confirmation Dialog (IosModalDialog - Destructive Action)
     IosModalDialog(

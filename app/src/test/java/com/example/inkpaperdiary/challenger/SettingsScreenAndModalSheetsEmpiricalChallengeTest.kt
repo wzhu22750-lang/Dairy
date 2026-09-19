@@ -159,7 +159,7 @@ class SettingsScreenAndModalSheetsEmpiricalChallengeTest {
         // Section 4 terminal row: 关于与版本信息 -> showDivider = false
         assertTrue(
             "Section 4 terminal row must omit divider (showDivider = false)",
-            content.contains("title = \"关于 InkPaperDiary\"") && content.contains("showDivider = false")
+            content.contains("title = \"关于 Dairy\"") && content.contains("showDivider = false")
         )
     }
 
@@ -345,8 +345,11 @@ class SettingsScreenAndModalSheetsEmpiricalChallengeTest {
         // Must have exactly the 4 canonical sections
         assertTrue("Must contain Section 1: 云端与同步", content.contains("title = \"云端与同步\""))
         assertTrue("Must contain Section 2: 安全与隐私", content.contains("title = \"安全与隐私\""))
-        assertTrue("Must contain Section 3: 外观与排版", content.contains("title = \"外观与排版\""))
+        assertTrue("Must contain Section 3: 纸面与排版 (Dairy 2.0)", content.contains("title = \"纸面与排版\""))
         assertTrue("Must contain Section 4: 数据与关于", content.contains("title = \"数据与关于\""))
+
+        // Dairy 2.0：统计页刻意降低存在感，入口收敛为"书的刻度"
+        assertTrue("Stats entry must be demoted to 书的刻度", content.contains("书的刻度"))
 
         // Must use IosLargeTitleScaffold
         assertTrue("Must use IosLargeTitleScaffold", content.contains("IosLargeTitleScaffold"))
@@ -370,11 +373,13 @@ class SettingsScreenAndModalSheetsEmpiricalChallengeTest {
         // Title font weight must be SemiBold (not Bold)
         assertTrue("IosModalDialog title must use FontWeight.SemiBold", content.contains("fontWeight = FontWeight.SemiBold"))
 
-        // System Blue confirm button
-        assertTrue("IosModalDialog must define systemBlue Color(0xFF007AFF)", content.contains("Color(0xFF007AFF)"))
+        // Dairy 2.0：确认按钮 = 墨色（跟随主题 onBackground），不再有系统蓝
+        assertTrue("IosModalDialog emphasis must follow theme onBackground", content.contains("systemBlue = MaterialTheme.colorScheme.onBackground"))
 
-        // Destructive Red
-        assertTrue("IosModalDialog must define destructiveRed Color(0xFFFF3B30)", content.contains("Color(0xFFFF3B30)"))
+        // 破坏性操作 = 朱砂（全应用唯一彩色）
+        assertTrue("IosModalDialog destructive must be InkPalette.Cinnabar", content.contains("destructiveRed = InkPalette.Cinnabar"))
+        assertFalse("IosModalDialog must NOT contain Apple system blue literal", content.contains("0xFF007AFF"))
+        assertFalse("IosModalDialog must NOT contain Apple system red literal", content.contains("0xFFFF3B30"))
     }
 
     // =============================================================================================

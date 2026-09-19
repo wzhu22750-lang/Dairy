@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
+import com.example.inkpaperdiary.core.designsystem.InkPalette
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
 import com.example.inkpaperdiary.core.designsystem.PaperColors
 import com.example.inkpaperdiary.core.designsystem.SansFontFamily
@@ -49,17 +50,17 @@ data class IosDialogAction(
 fun isDialogButtonLayoutVertical(buttonCount: Int): Boolean = buttonCount >= 3
 
 /**
- * Apple HIG Alert Dialog (UIAlertController alert style)
+ * 纸张化警告对话框 (Dairy 2.0)
  *
  * Characteristics:
  * - 270dp standardized fixed width
- * - 14dp squircle corners
- * - Centered 17sp bold title and 13sp message
+ * - 14dp 微圆角
+ * - 居中标题与消息
  * - Spec 6.4 adaptive button layout:
  *   * 1 button: 44dp full width
  *   * 2 buttons: 44dp horizontal split row with 0.5dp vertical hairline divider
  *   * 3+ buttons: 44dp vertical column stack with 0.5dp horizontal hairline dividers
- * - Destructive action highlighted in Apple Red (0xFFFF3B30)
+ * - 确认按钮为墨色（跟随主题），破坏性操作为朱砂（全应用唯一彩色）
  */
 @Composable
 fun IosModalDialog(
@@ -116,8 +117,8 @@ fun IosModalDialog(
     val isDark = isSystemInDarkTheme()
     val dialogBgColor = AppleMaterials.backgroundColor(MaterialThickness.ULTRA_THICK)
     val dividerColor = AppleMaterials.separatorColor(isDark)
-    val destructiveRed = Color(0xFFFF3B30)
-    val systemBlue = Color(0xFF007AFF)
+    val destructiveRed = InkPalette.Cinnabar
+    val systemBlue = MaterialTheme.colorScheme.onBackground
 
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(

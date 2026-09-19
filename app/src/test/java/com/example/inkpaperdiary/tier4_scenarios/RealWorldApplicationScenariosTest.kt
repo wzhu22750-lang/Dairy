@@ -6,7 +6,6 @@ import com.example.inkpaperdiary.core.network.SupabaseClient
 import com.example.inkpaperdiary.core.security.AppLockManager
 import com.example.inkpaperdiary.domain.model.Attachment
 import com.example.inkpaperdiary.domain.model.Diary
-import com.example.inkpaperdiary.domain.model.Mood
 import com.example.inkpaperdiary.domain.model.SyncStatus
 import com.example.inkpaperdiary.domain.model.Tag
 import com.example.inkpaperdiary.domain.model.Weather
@@ -38,9 +37,8 @@ class RealWorldApplicationScenariosTest {
         val editorRoute = Screen.Editor.createRoute(null)
         assertEquals("editor/new", editorRoute)
 
-        // Step 3: In Editor, user selects Mood (HAPPY), Weather (SUNNY), and custom entry Date
+        // Step 3: In Editor, user selects Weather (SUNNY) and custom entry Date
         val customDate = 1718000000000L
-        val selectedMood = Mood.HAPPY
         val selectedWeather = Weather.SUNNY
 
         // Step 4: User writes rich Markdown content
@@ -58,7 +56,6 @@ class RealWorldApplicationScenariosTest {
             id = UUID.randomUUID().toString(),
             title = "开启新日记",
             contentMarkdown = markdownContent,
-            mood = selectedMood,
             weather = selectedWeather,
             entryDate = customDate,
             isPinned = isPinned,
@@ -71,7 +68,6 @@ class RealWorldApplicationScenariosTest {
 
         // Step 7: Verification in Journal stream
         assertTrue(diary.isPinned)
-        assertEquals(Mood.HAPPY, diary.mood)
         assertEquals(Weather.SUNNY, diary.weather)
         assertTrue(diary.previewText.contains("开启新日记"))
         assertTrue(diary.wordCount >= 20)
@@ -212,7 +208,6 @@ class RealWorldApplicationScenariosTest {
                 "userId": "user_001",
                 "title": "${diary.title}",
                 "contentMarkdown": "${diary.contentMarkdown}",
-                "mood": "${diary.mood.code}",
                 "weather": "${diary.weather.code}",
                 "entryDate": ${diary.entryDate},
                 "createdAt": ${diary.createdAt},
@@ -250,14 +245,13 @@ class RealWorldApplicationScenariosTest {
     // ---------------------------------------------------------------------------------------------
     @Test
     fun testScenario5_HeavyJournalFilteringAndCollapsibleTitleInteraction() {
-        // Step 1: Generate 100 diary entries with mixed pinned and mood attributes
+        // Step 1: Generate 100 diary entries with mixed pinned attributes
         val diaries = (1..100).map { i ->
             Diary(
                 id = "diary-$i",
                 title = "日记 $i",
                 contentMarkdown = "这是第 $i 篇生活随笔记录。",
-                isPinned = (i % 10 == 0), // 10 pinned entries
-                mood = if (i % 2 == 0) Mood.HAPPY else Mood.CALM
+                isPinned = (i % 10 == 0) // 10 pinned entries
             )
         }
         assertEquals(100, diaries.size)

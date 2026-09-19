@@ -8,7 +8,6 @@ import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.ui.graphics.Color
 import com.example.inkpaperdiary.core.designsystem.components.IosActionItem
 import com.example.inkpaperdiary.domain.model.Diary
-import com.example.inkpaperdiary.domain.model.Mood
 import com.example.inkpaperdiary.domain.model.Weather
 import com.example.inkpaperdiary.ui.navigation.AppDestination
 import com.example.inkpaperdiary.ui.navigation.IosTab
@@ -678,12 +677,14 @@ class IosActionSheetAndNavigationEmpiricalChallengeTest {
         assertTrue("TimelineScreen must use IosActionSheet", content.contains("IosActionSheet("))
         assertTrue("TimelineScreen must configure IosActionItem", content.contains("IosActionItem("))
 
-        // 3. Must use IosSegmentedControl for filters
-        assertTrue("TimelineScreen must use IosSegmentedControl", content.contains("IosSegmentedControl("))
+        // 3. Dairy 2.0：时间书直接印在纸面上，不再有分段筛选器与心情胶囊
+        assertFalse("TimelineScreen must NOT contain IosSegmentedControl (Dairy 2.0 时间书)",
+            content.contains("IosSegmentedControl("))
+        assertFalse("TimelineScreen must NOT reference Mood (心情系统已删除)", content.contains("Mood"))
 
-        // 4. Compose button must be in top bar (IosNavIconButton with Icons.Outlined.Edit)
+        // 4. Compose action must be in top bar (IosNavIconButton with Icons.Outlined.Edit)
         assertTrue("Compose action must be an IosNavIconButton in actions slot",
-            content.contains("icon = Icons.Outlined.Edit") && content.contains("contentDescription = \"新建日记\""))
+            content.contains("icon = Icons.Outlined.Edit") && content.contains("contentDescription = \"书写今天\""))
 
         // 5. Must NOT have FloatingActionButton
         assertFalse("TimelineScreen must NOT contain FloatingActionButton", content.contains("FloatingActionButton"))

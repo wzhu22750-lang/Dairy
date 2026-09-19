@@ -3,7 +3,6 @@ package com.example.inkpaperdiary.challenger
 import androidx.compose.ui.unit.dp
 import com.example.inkpaperdiary.domain.model.Attachment
 import com.example.inkpaperdiary.domain.model.Diary
-import com.example.inkpaperdiary.domain.model.Mood
 import com.example.inkpaperdiary.domain.model.SyncStatus
 import com.example.inkpaperdiary.domain.model.Tag
 import com.example.inkpaperdiary.domain.model.Weather
@@ -35,8 +34,7 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
     private fun applyTimelineFilter(
         diaries: List<Diary>,
         filteredDiaries: List<Diary>,
-        selectedSegment: String,
-        selectedMoodFilter: Mood?
+        selectedSegment: String
     ): List<Diary> {
         val source = if (diaries.isNotEmpty()) diaries else filteredDiaries
         var list = source
@@ -45,9 +43,6 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
             "图文" -> { list = list.filter { it.attachments.isNotEmpty() } }
             "置顶" -> { list = list.filter { it.isPinned } }
         }
-        if (selectedMoodFilter != null) {
-            list = list.filter { it.mood == selectedMoodFilter }
-        }
         return list
     }
 
@@ -55,7 +50,6 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         id: String = UUID.randomUUID().toString(),
         title: String = "Test Title",
         content: String = "Test content",
-        mood: Mood = Mood.CALM,
         weather: Weather = Weather.SUNNY,
         isPinned: Boolean = false,
         entryDate: Long = System.currentTimeMillis(),
@@ -73,7 +67,6 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
             id = id,
             title = title,
             contentMarkdown = content,
-            mood = mood,
             weather = weather,
             isPinned = isPinned,
             entryDate = entryDate,
@@ -103,12 +96,12 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         val fullDataset = listOf(d1, d2, d3, d4, d5, d6, d7, d8, d9)
 
         // 1. "全部" filter precision
-        val allResult = applyTimelineFilter(fullDataset, fullDataset, "全部", null)
+        val allResult = applyTimelineFilter(fullDataset, fullDataset, "全部")
         assertEquals("全部 filter must return all 9 items", 9, allResult.size)
         assertEquals(fullDataset.map { it.id }, allResult.map { it.id })
 
         // 2. "图文" filter precision: must match exactly items with attachments.isNotEmpty()
-        val photoResult = applyTimelineFilter(fullDataset, fullDataset, "图文", null)
+        val photoResult = applyTimelineFilter(fullDataset, fullDataset, "图文")
         val expectedPhotoIds = listOf("3", "4", "5", "6", "7", "8", "9")
         assertEquals("图文 filter must return exactly 7 photo entries", 7, photoResult.size)
         assertEquals(expectedPhotoIds, photoResult.map { it.id })
@@ -117,7 +110,7 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         assertFalse("photoResult must not contain text-only d2", photoResult.any { it.id == "2" })
 
         // 3. "置顶" filter precision: must match exactly items with isPinned == true
-        val pinnedResult = applyTimelineFilter(fullDataset, fullDataset, "置顶", null)
+        val pinnedResult = applyTimelineFilter(fullDataset, fullDataset, "置顶")
         val expectedPinnedIds = listOf("2", "4", "6", "8")
         assertEquals("置顶 filter must return exactly 4 pinned entries", 4, pinnedResult.size)
         assertEquals(expectedPinnedIds, pinnedResult.map { it.id })
@@ -144,58 +137,42 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
     // =========================================================================================
 
     @Test
-    fun challenge_compoundFilteringPrecision_segmentCrossMoodMatrix() {
-        val moods = Mood.entries
+    fun challenge_compoundFilteringPrecision_segmentCrossAttributeMatrix() {
         val segments = listOf("全部", "图文", "置顶")
 
-        // Build comprehensive dataset: 8 moods x 4 variations (text/photo, pinned/unpinned) = 32 entries
+        // Build comprehensive dataset: 4 variations (text/photo, pinned/unpinned)
         val dataset = mutableListOf<Diary>()
         var idCounter = 1
-        for (mood in moods) {
-            dataset.add(createDiary(id = "${idCounter++}", mood = mood, isPinned = false, attachmentsCount = 0))
-            dataset.add(createDiary(id = "${idCounter++}", mood = mood, isPinned = true, attachmentsCount = 0))
-            dataset.add(createDiary(id = "${idCounter++}", mood = mood, isPinned = false, attachmentsCount = 2))
-            dataset.add(createDiary(id = "${idCounter++}", mood = mood, isPinned = true, attachmentsCount = 3))
+        for (pinned in listOf(false, true)) {
+            dataset.add(createDiary(id = "${idCounter++}", isPinned = pinned, attachmentsCount = 0))
+            dataset.add(createDiary(id = "${idCounter++}", isPinned = pinned, attachmentsCount = 2))
         }
-        assertEquals(32, dataset.size)
+        assertEquals(4, dataset.size)
 
         for (segment in segments) {
-            for (mood in moods) {
-                val result = applyTimelineFilter(dataset, dataset, segment, mood)
+            val result = applyTimelineFilter(dataset, dataset, segment)
 
-                // 1. Every returned item must match the selected mood
-                assertTrue(
-                    "Every item in ($segment, ${mood.name}) must have mood $mood",
-                    result.all { it.mood == mood }
-                )
-
-                // 2. Every returned item must satisfy segment criteria
-                when (segment) {
-                    "全部" -> {
-                        assertEquals("In 全部, each mood should have exactly 4 items", 4, result.size)
-                    }
-                    "图文" -> {
-                        assertTrue("Every item in 图文 must have attachments", result.all { it.attachments.isNotEmpty() })
-                        assertEquals("In 图文, each mood should have exactly 2 photo items", 2, result.size)
-                    }
-                    "置顶" -> {
-                        assertTrue("Every item in 置顶 must be pinned", result.all { it.isPinned })
-                        assertEquals("In 置顶, each mood should have exactly 2 pinned items", 2, result.size)
-                    }
+            // Every returned item must satisfy segment criteria
+            when (segment) {
+                "全部" -> {
+                    assertEquals("In 全部, all items are returned", 4, result.size)
+                }
+                "图文" -> {
+                    assertTrue("Every item in 图文 must have attachments", result.all { it.attachments.isNotEmpty() })
+                    assertEquals("In 图文, exactly the 2 photo items", 2, result.size)
+                }
+                "置顶" -> {
+                    assertTrue("Every item in 置顶 must be pinned", result.all { it.isPinned })
+                    assertEquals("In 置顶, exactly the 2 pinned items", 2, result.size)
                 }
             }
-
-            // Verify sum across all moods equals segment total when mood filter is null
-            val totalForSegment = applyTimelineFilter(dataset, dataset, segment, null)
-            val sumOfMoods = moods.sumOf { mood ->
-                applyTimelineFilter(dataset, dataset, segment, mood).size
-            }
-            assertEquals(
-                "Sum of mood subsets for segment '$segment' must equal unfiltered segment total",
-                totalForSegment.size,
-                sumOfMoods
-            )
         }
+
+        // Partition invariant: 全部 == 图文 + text-only
+        val all = applyTimelineFilter(dataset, dataset, "全部")
+        val photo = applyTimelineFilter(dataset, dataset, "图文")
+        val textOnly = all.filter { it.attachments.isEmpty() }
+        assertEquals(all.size, photo.size + textOnly.size)
     }
 
     // =========================================================================================
@@ -205,14 +182,12 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
     @Test
     fun challenge_highFrequencyFilterSwitching_stressTest() {
         val segments = listOf("全部", "图文", "置顶")
-        val moods = listOf(null) + Mood.entries
 
         // Generate 500 random diaries
         val random = Random(42)
         val dataset = (1..500).map { i ->
             createDiary(
                 id = "diary-$i",
-                mood = Mood.entries[random.nextInt(Mood.entries.size)],
                 isPinned = random.nextBoolean(),
                 attachmentsCount = if (random.nextBoolean()) random.nextInt(0, 8) else 0,
                 entryDate = System.currentTimeMillis() - i * 10_000L
@@ -226,9 +201,8 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         val elapsedNano = measureNanoTime {
             for (i in 0 until iterations) {
                 val targetSegment = segments[i % segments.size]
-                val targetMood = moods[(i / 3) % moods.size]
 
-                val result = applyTimelineFilter(dataset, dataset, targetSegment, targetMood)
+                val result = applyTimelineFilter(dataset, dataset, targetSegment)
 
                 // Monotonic assertions
                 assertTrue("Result must never be null", result != null)
@@ -239,12 +213,8 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
                     "图文" -> assertTrue("All items in '图文' must have attachments", result.all { it.attachments.isNotEmpty() })
                     "置顶" -> assertTrue("All items in '置顶' must be pinned", result.all { it.isPinned })
                 }
-                if (targetMood != null) {
-                    assertTrue("All items must match mood", result.all { it.mood == targetMood })
-                }
-
                 // Determinism test: repeated call must return exactly identical list
-                val repeated = applyTimelineFilter(dataset, dataset, targetSegment, targetMood)
+                val repeated = applyTimelineFilter(dataset, dataset, targetSegment)
                 assertEquals("Filter execution must be 100% deterministic and pure", result, repeated)
 
                 previousResultCount = result.size
@@ -265,7 +235,7 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
     fun challenge_emptyStateTransitions_andRecovery() {
         // Case A: Completely empty database (0 entries)
         val emptyDb = emptyList<Diary>()
-        val resultA = applyTimelineFilter(emptyDb, emptyDb, "全部", null)
+        val resultA = applyTimelineFilter(emptyDb, emptyDb, "全部")
         assertTrue("Result must be empty", resultA.isEmpty())
 
         // Line 293 empty state condition:
@@ -281,7 +251,7 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         val unpinnedOnlyDb = (1..5).map { i ->
             createDiary(id = "$i", isPinned = false, attachmentsCount = 0)
         }
-        val resultB = applyTimelineFilter(unpinnedOnlyDb, unpinnedOnlyDb, "置顶", null)
+        val resultB = applyTimelineFilter(unpinnedOnlyDb, unpinnedOnlyDb, "置顶")
         assertTrue("Result for '置顶' on unpinned-only DB must be empty", resultB.isEmpty())
 
         val isFilteredB = unpinnedOnlyDb.isNotEmpty() && resultB.isEmpty()
@@ -294,7 +264,7 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         val textOnlyDb = (1..5).map { i ->
             createDiary(id = "$i", isPinned = true, attachmentsCount = 0)
         }
-        val resultC = applyTimelineFilter(textOnlyDb, textOnlyDb, "图文", null)
+        val resultC = applyTimelineFilter(textOnlyDb, textOnlyDb, "图文")
         assertTrue("Result for '图文' on text-only DB must be empty", resultC.isEmpty())
         val isFilteredC = textOnlyDb.isNotEmpty() && resultC.isEmpty()
         assertTrue(
@@ -303,8 +273,8 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         )
 
         // Case D: Recovery via "清除筛选条件" (Line 297-301)
-        // onClearFilterClick: selectedSegment = "全部", onlyPinned = false, moodFilter = null
-        val recoveredResult = applyTimelineFilter(textOnlyDb, textOnlyDb, "全部", null)
+        // onClearFilterClick: selectedSegment = "全部", onlyPinned = false
+        val recoveredResult = applyTimelineFilter(textOnlyDb, textOnlyDb, "全部")
         assertEquals(
             "Clearing filters must immediately restore all entries",
             textOnlyDb.size,
@@ -318,13 +288,13 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
             createDiary(id = "1", isPinned = true, attachmentsCount = 0),
             createDiary(id = "2", isPinned = false, attachmentsCount = 1)
         )
-        val beforeUnpin = applyTimelineFilter(dynamicDb, dynamicDb, "置顶", null)
+        val beforeUnpin = applyTimelineFilter(dynamicDb, dynamicDb, "置顶")
         assertEquals(1, beforeUnpin.size)
         assertFalse(dynamicDb.isNotEmpty() && beforeUnpin.isEmpty())
 
         // Simulate unpinning diary "1"
         dynamicDb = dynamicDb.map { if (it.id == "1") it.copy(isPinned = false) else it }
-        val afterUnpin = applyTimelineFilter(dynamicDb, dynamicDb, "置顶", null)
+        val afterUnpin = applyTimelineFilter(dynamicDb, dynamicDb, "置顶")
         assertTrue(afterUnpin.isEmpty())
         assertTrue("After unpinning last pinned item, isFiltered must become TRUE", dynamicDb.isNotEmpty() && afterUnpin.isEmpty())
     }
@@ -354,13 +324,13 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
             // Benchmark "图文" filter
             val photoFiltered: List<Diary>
             val photoTimeNano = measureNanoTime {
-                photoFiltered = applyTimelineFilter(dataset, dataset, "图文", null)
+                photoFiltered = applyTimelineFilter(dataset, dataset, "图文")
             }
 
             // Benchmark "置顶" filter
             val pinnedFiltered: List<Diary>
             val pinnedTimeNano = measureNanoTime {
-                pinnedFiltered = applyTimelineFilter(dataset, dataset, "置顶", null)
+                pinnedFiltered = applyTimelineFilter(dataset, dataset, "置顶")
             }
 
             // Verify order preservation:
@@ -595,7 +565,6 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         val dataset = (1..1000).map { i ->
             createDiary(
                 id = "mem-$i",
-                mood = Mood.entries[i % Mood.entries.size],
                 isPinned = i % 4 == 0,
                 attachmentsCount = i % 5
             )
@@ -611,8 +580,7 @@ class TimelineScreenStreamFilterEmpiricalChallengeTest {
         // Run 5,000 cycles
         for (i in 0 until 5000) {
             val segment = segments[i % segments.size]
-            val mood = if (i % 2 == 0) Mood.entries[i % Mood.entries.size] else null
-            val result = applyTimelineFilter(dataset, dataset, segment, mood)
+            val result = applyTimelineFilter(dataset, dataset, segment)
             dummySum += result.size
         }
 

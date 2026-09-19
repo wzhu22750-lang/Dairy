@@ -2,6 +2,8 @@ package com.example.inkpaperdiary.challenger
 
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import com.example.inkpaperdiary.core.designsystem.InkPalette
 import androidx.compose.ui.unit.dp
 import com.example.inkpaperdiary.core.designsystem.AppleMaterials
 import com.example.inkpaperdiary.core.designsystem.MaterialThickness
@@ -33,32 +35,16 @@ class AppleMaterialEmpiricalChallengeTest {
         val thick = AppleMaterials.backgroundColor(MaterialThickness.THICK, isDark = false)
         val ultraThick = AppleMaterials.backgroundColor(MaterialThickness.ULTRA_THICK, isDark = false)
 
-        // Exact ARGB checks
-        assertEquals("Light ULTRA_THIN should be 0x73FFFFFF", Color(0x73FFFFFF), ultraThin)
-        assertEquals("Light THIN should be 0x99FFFFFF", Color(0x99FFFFFF), thin)
-        assertEquals("Light REGULAR should be 0xE6F2F2F7", Color(0xE6F2F2F7), regular)
-        assertEquals("Light THICK should be 0xF5FFFFFF", Color(0xF5FFFFFF), thick)
-        assertEquals("Light ULTRA_THICK should be 0xFDFFFFFF", Color(0xFDFFFFFF), ultraThick)
+        // 纸张化契约：薄材质 = 主纸面，REGULAR 及以上 = 浮层纸面，全部实心
+        assertEquals(InkPalette.PaperLight, ultraThin)
+        assertEquals(InkPalette.PaperLight, thin)
+        assertEquals(InkPalette.PaperRaisedLight, regular)
+        assertEquals(InkPalette.PaperRaisedLight, thick)
+        assertEquals(InkPalette.PaperRaisedLight, ultraThick)
 
-        // Expected alpha ranges according to HIG
-        assertEquals(0.45f, ultraThin.alpha, 0.01f) // ~45%
-        assertEquals(0.60f, thin.alpha, 0.01f)      // ~60%
-        assertEquals(0.90f, regular.alpha, 0.01f)   // ~90%
-        assertEquals(0.96f, thick.alpha, 0.01f)     // ~96%
-        assertEquals(0.99f, ultraThick.alpha, 0.01f) // ~99%
-
-        // Strict monotonicity check: Each level MUST be strictly more opaque than previous
-        val alphas = listOf(ultraThin.alpha, thin.alpha, regular.alpha, thick.alpha, ultraThick.alpha)
-        for (i in 0 until alphas.size - 1) {
-            assertTrue(
-                "Alpha at level $i (${alphas[i]}) must be strictly less than level ${i + 1} (${alphas[i + 1]})",
-                alphas[i] < alphas[i + 1]
-            )
+        listOf(ultraThin, thin, regular, thick, ultraThick).forEach { color ->
+            assertEquals("Light material must be fully opaque paper", 1f, color.alpha, 0.001f)
         }
-
-        // Distinctness check: All colors must be unique
-        val colors = setOf(ultraThin, thin, regular, thick, ultraThick)
-        assertEquals("All 5 Light mode material colors must be unique", 5, colors.size)
     }
 
     @Test
@@ -69,32 +55,16 @@ class AppleMaterialEmpiricalChallengeTest {
         val thick = AppleMaterials.backgroundColor(MaterialThickness.THICK, isDark = true)
         val ultraThick = AppleMaterials.backgroundColor(MaterialThickness.ULTRA_THICK, isDark = true)
 
-        // Exact ARGB checks
-        assertEquals("Dark ULTRA_THIN should be 0x661C1C1E", Color(0x661C1C1E), ultraThin)
-        assertEquals("Dark THIN should be 0x8C1C1C1E", Color(0x8C1C1C1E), thin)
-        assertEquals("Dark REGULAR should be 0xD9161618", Color(0xD9161618), regular)
-        assertEquals("Dark THICK should be 0xF21C1C1E", Color(0xF21C1C1E), thick)
-        assertEquals("Dark ULTRA_THICK should be 0xFA121214", Color(0xFA121214), ultraThick)
+        // 深色契约：柔和黑主纸面 + 稍亮浮层，全部实心
+        assertEquals(InkPalette.PaperDark, ultraThin)
+        assertEquals(InkPalette.PaperDark, thin)
+        assertEquals(InkPalette.PaperRaisedDark, regular)
+        assertEquals(InkPalette.PaperRaisedDark, thick)
+        assertEquals(InkPalette.PaperRaisedDark, ultraThick)
 
-        // Expected alpha ranges according to HIG
-        assertEquals(0.40f, ultraThin.alpha, 0.01f) // ~40%
-        assertEquals(0.55f, thin.alpha, 0.01f)      // ~55%
-        assertEquals(0.85f, regular.alpha, 0.01f)   // ~85%
-        assertEquals(0.95f, thick.alpha, 0.01f)     // ~95%
-        assertEquals(0.98f, ultraThick.alpha, 0.01f) // ~98%
-
-        // Strict monotonicity check: Each level MUST be strictly more opaque than previous
-        val alphas = listOf(ultraThin.alpha, thin.alpha, regular.alpha, thick.alpha, ultraThick.alpha)
-        for (i in 0 until alphas.size - 1) {
-            assertTrue(
-                "Alpha at level $i (${alphas[i]}) must be strictly less than level ${i + 1} (${alphas[i + 1]})",
-                alphas[i] < alphas[i + 1]
-            )
+        listOf(ultraThin, thin, regular, thick, ultraThick).forEach { color ->
+            assertEquals("Dark material must be fully opaque paper", 1f, color.alpha, 0.001f)
         }
-
-        // Distinctness check: All colors must be unique
-        val colors = setOf(ultraThin, thin, regular, thick, ultraThick)
-        assertEquals("All 5 Dark mode material colors must be unique", 5, colors.size)
     }
 
     @Test
@@ -102,17 +72,17 @@ class AppleMaterialEmpiricalChallengeTest {
         val lightBar = AppleMaterials.barBackgroundColor(isDark = false)
         val darkBar = AppleMaterials.barBackgroundColor(isDark = true)
 
-        // 93% translucency contract: 0xEE / 255f = 0.9333f
-        assertEquals("Light bar should be 0xEEF2F2F7", Color(0xEEF2F2F7), lightBar)
-        assertEquals("Dark bar should be 0xEE000000", Color(0xEE000000), darkBar)
-        assertEquals(0.933f, lightBar.alpha, 0.01f)
-        assertEquals(0.933f, darkBar.alpha, 0.01f)
+        // 97% 纸色契约：0xF7 / 255f ≈ 0.969
+        assertEquals("Light bar should be InkBarLight", InkPalette.InkBarLight, lightBar)
+        assertEquals("Dark bar should be InkBarDark", InkPalette.InkBarDark, darkBar)
+        assertEquals(0.969f, lightBar.alpha, 0.01f)
+        assertEquals(0.969f, darkBar.alpha, 0.01f)
 
-        // Separator hairline colors
+        // 分割线 = 实色发丝线
         val lightSep = AppleMaterials.separatorColor(isDark = false)
         val darkSep = AppleMaterials.separatorColor(isDark = true)
-        assertEquals("Light separator should be 0x1F000000 (12% black)", Color(0x1F000000), lightSep)
-        assertEquals("Dark separator should be 0x2EFFFFFF (18% white)", Color(0x2EFFFFFF), darkSep)
+        assertEquals("Light separator should be HairlineLight", InkPalette.HairlineLight, lightSep)
+        assertEquals("Dark separator should be HairlineDark", InkPalette.HairlineDark, darkSep)
     }
 
     // =========================================================================================
@@ -128,19 +98,19 @@ class AppleMaterialEmpiricalChallengeTest {
         val lightQuaternary = AppleMaterials.vibrancyColor(VibrancyLevel.QUATERNARY, isDark = false)
 
         assertEquals(1.0f, lightPrimary.alpha, 0.01f)
-        assertEquals(0.60f, lightSecondary.alpha, 0.01f)
-        assertEquals(0.30f, lightTertiary.alpha, 0.01f)
-        assertEquals(0.18f, lightQuaternary.alpha, 0.01f)
+        assertEquals(0.62f, lightSecondary.alpha, 0.01f)
+        assertEquals(0.40f, lightTertiary.alpha, 0.01f)
+        assertEquals(0.25f, lightQuaternary.alpha, 0.01f)
 
         // Strict decreasing monotonicity
         assertTrue(lightPrimary.alpha > lightSecondary.alpha)
         assertTrue(lightSecondary.alpha > lightTertiary.alpha)
         assertTrue(lightTertiary.alpha > lightQuaternary.alpha)
 
-        // Light mode defaults to Black base color
-        assertEquals(0f, lightPrimary.red, 0.001f)
-        assertEquals(0f, lightPrimary.green, 0.001f)
-        assertEquals(0f, lightPrimary.blue, 0.001f)
+        // 浅色模式基底 = 墨字（暖黑）
+        assertEquals(InkPalette.InkLight.red, lightPrimary.red, 0.001f)
+        assertEquals(InkPalette.InkLight.green, lightPrimary.green, 0.001f)
+        assertEquals(InkPalette.InkLight.blue, lightPrimary.blue, 0.001f)
 
         // Dark mode defaults to White base color
         val darkPrimary = AppleMaterials.vibrancyColor(VibrancyLevel.PRIMARY, isDark = true)
@@ -149,13 +119,14 @@ class AppleMaterialEmpiricalChallengeTest {
         val darkQuaternary = AppleMaterials.vibrancyColor(VibrancyLevel.QUATERNARY, isDark = true)
 
         assertEquals(1.0f, darkPrimary.alpha, 0.01f)
-        assertEquals(0.60f, darkSecondary.alpha, 0.01f)
-        assertEquals(0.30f, darkTertiary.alpha, 0.01f)
-        assertEquals(0.18f, darkQuaternary.alpha, 0.01f)
+        assertEquals(0.62f, darkSecondary.alpha, 0.01f)
+        assertEquals(0.40f, darkTertiary.alpha, 0.01f)
+        assertEquals(0.25f, darkQuaternary.alpha, 0.01f)
 
-        assertEquals(1f, darkPrimary.red, 0.001f)
-        assertEquals(1f, darkPrimary.green, 0.001f)
-        assertEquals(1f, darkPrimary.blue, 0.001f)
+        // 深色模式基底 = 暖白
+        assertEquals(InkPalette.InkDark.red, darkPrimary.red, 0.001f)
+        assertEquals(InkPalette.InkDark.green, darkPrimary.green, 0.001f)
+        assertEquals(InkPalette.InkDark.blue, darkPrimary.blue, 0.001f)
     }
 
     @Test
@@ -175,9 +146,9 @@ class AppleMaterialEmpiricalChallengeTest {
             val quaternary = AppleMaterials.vibrancyColor(VibrancyLevel.QUATERNARY, isDark = false, baseColor = base)
 
             assertEquals(1.0f, primary.alpha, 0.01f)
-            assertEquals(0.60f, secondary.alpha, 0.01f)
-            assertEquals(0.30f, tertiary.alpha, 0.01f)
-            assertEquals(0.18f, quaternary.alpha, 0.01f)
+            assertEquals(0.62f, secondary.alpha, 0.01f)
+            assertEquals(0.40f, tertiary.alpha, 0.01f)
+            assertEquals(0.25f, quaternary.alpha, 0.01f)
             assertEquals(base.red, primary.red, 0.001f)
             assertEquals(base.green, primary.green, 0.001f)
             assertEquals(base.blue, primary.blue, 0.001f)
@@ -189,9 +160,9 @@ class AppleMaterialEmpiricalChallengeTest {
             val extQuaternary = base.withVibrancy(VibrancyLevel.QUATERNARY)
 
             assertEquals(base.alpha * 1.0f, extPrimary.alpha, 0.01f)
-            assertEquals(base.alpha * 0.60f, extSecondary.alpha, 0.01f)
-            assertEquals(base.alpha * 0.30f, extTertiary.alpha, 0.01f)
-            assertEquals(base.alpha * 0.18f, extQuaternary.alpha, 0.01f)
+            assertEquals(base.alpha * 0.62f, extSecondary.alpha, 0.01f)
+            assertEquals(base.alpha * 0.40f, extTertiary.alpha, 0.01f)
+            assertEquals(base.alpha * 0.25f, extQuaternary.alpha, 0.01f)
         }
     }
 
@@ -213,47 +184,18 @@ class AppleMaterialEmpiricalChallengeTest {
     }
 
     @Test
-    fun challenge_glassBorder_SpecularGradientStopsExtraction() {
+    fun challenge_glassBorder_SolidColorBrush() {
+        // 纸张化契约：发丝线为单色实刷，不再存在高光渐变
         val lightBorder = AppleMaterials.glassBorder(isDark = false)
         val darkBorder = AppleMaterials.glassBorder(isDark = true)
 
-        val lightBrush = lightBorder.brush
-        val darkBrush = darkBorder.brush
+        assertNotNull("Light border brush must not be null", lightBorder.brush)
+        assertNotNull("Dark border brush must not be null", darkBorder.brush)
 
-        assertNotNull("Light border brush must not be null", lightBrush)
-        assertNotNull("Dark border brush must not be null", darkBrush)
-
-        // Extract colors from LinearGradient brush using reflection
-        fun extractColors(brush: Brush): List<Color>? {
-            return try {
-                val field = brush.javaClass.declaredFields.firstOrNull { it.name == "colors" }
-                if (field != null) {
-                    field.isAccessible = true
-                    @Suppress("UNCHECKED_CAST")
-                    field.get(brush) as? List<Color>
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        val lightColors = extractColors(lightBrush)
-        assertNotNull("Light border gradient colors must be extractable from Brush", lightColors)
-        assertEquals("Light glass border must have exactly 2 gradient stops (top highlight, bottom shadow)", 2, lightColors!!.size)
-        // Top highlight: 60% white specular
-        assertEquals("Light top specular stop must be 0x99FFFFFF", Color(0x99FFFFFF), lightColors[0])
-        // Bottom shadow: 12% black contact shadow
-        assertEquals("Light bottom shadow stop must be 0x1F000000", Color(0x1F000000), lightColors[1])
-
-        val darkColors = extractColors(darkBrush)
-        assertNotNull("Dark border gradient colors must be extractable from Brush", darkColors)
-        assertEquals("Dark glass border must have exactly 2 gradient stops (top reflex, bottom reflex)", 2, darkColors!!.size)
-        // Top reflex: 22% white
-        assertEquals("Dark top specular stop must be 0x38FFFFFF", Color(0x38FFFFFF), darkColors[0])
-        // Bottom reflex: 8% white
-        assertEquals("Dark bottom specular stop must be 0x14FFFFFF", Color(0x14FFFFFF), darkColors[1])
+        assertEquals("Light hairline brush must be the solid HairlineLight",
+            SolidColor(InkPalette.HairlineLight), lightBorder.brush)
+        assertEquals("Dark hairline brush must be the solid HairlineDark",
+            SolidColor(InkPalette.HairlineDark), darkBorder.brush)
     }
 
     // =========================================================================================
@@ -295,14 +237,14 @@ class AppleMaterialEmpiricalChallengeTest {
         val lightUnspecified = AppleMaterials.vibrancyColor(VibrancyLevel.SECONDARY, isDark = false, baseColor = Color.Unspecified)
         val darkUnspecified = AppleMaterials.vibrancyColor(VibrancyLevel.SECONDARY, isDark = true, baseColor = Color.Unspecified)
 
-        assertEquals("Unspecified light base should fallback to black", 0f, lightUnspecified.red, 0.001f)
-        assertEquals("Unspecified dark base should fallback to white", 1f, darkUnspecified.red, 0.001f)
-        assertEquals(0.60f, lightUnspecified.alpha, 0.01f)
-        assertEquals(0.60f, darkUnspecified.alpha, 0.01f)
+        assertEquals("Unspecified light base should fallback to ink", InkPalette.InkLight.red, lightUnspecified.red, 0.001f)
+        assertEquals("Unspecified dark base should fallback to warm white", InkPalette.InkDark.red, darkUnspecified.red, 0.001f)
+        assertEquals(0.62f, lightUnspecified.alpha, 0.01f)
+        assertEquals(0.62f, darkUnspecified.alpha, 0.01f)
 
         // Passing Color.Transparent (0x00000000)
         val lightTransparent = AppleMaterials.vibrancyColor(VibrancyLevel.TERTIARY, isDark = false, baseColor = Color.Transparent)
-        assertEquals("Transparent base with tertiary vibrancy should have 0.30 alpha", 0.30f, lightTransparent.alpha, 0.01f)
+        assertEquals("Transparent base with tertiary vibrancy should have 0.40 alpha", 0.40f, lightTransparent.alpha, 0.01f)
     }
 
     @Test

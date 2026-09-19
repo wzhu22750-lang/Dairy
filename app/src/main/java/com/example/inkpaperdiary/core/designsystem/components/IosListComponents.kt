@@ -325,8 +325,9 @@ fun IosSwitch(
     val isDark = isSystemInDarkTheme()
     val haptics = LocalHapticFeedback.current
 
-    val trackCheckedColor = Color(0xFF34C759)
-    val trackUncheckedColor = if (isDark) Color(0xFF39393D) else Color(0xFFE9E9EA)
+    // 选中轨道 = 墨色；Dairy 2.0 全应用无彩色（破坏性操作除外）
+    val trackCheckedColor = MaterialTheme.colorScheme.onBackground
+    val trackUncheckedColor = if (isDark) InkPalette.WashDark else InkPalette.WashLight
 
     val animatedTrackColor by animateColorAsState(
         targetValue = if (checked) trackCheckedColor else trackUncheckedColor,
@@ -375,14 +376,14 @@ fun IosSwitch(
 }
 
 /**
- * 30dp Squircle Category Icon Box
+ * 30dp 图标位：纸张化后不再绘制彩色方块，仅以墨色图标安静的占位。
  */
 @Composable
 fun IosSquircleIconBox(
     icon: ImageVector,
     contentDescription: String? = null,
-    backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    iconTint: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    backgroundColor: Color = Color.Transparent,
+    iconTint: Color = MaterialTheme.colorScheme.onBackground,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -396,7 +397,7 @@ fun IosSquircleIconBox(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = iconTint,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(19.dp)
         )
     }
 }

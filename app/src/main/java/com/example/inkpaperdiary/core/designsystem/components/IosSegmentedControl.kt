@@ -26,7 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.inkpaperdiary.core.designsystem.PaperColors
+import com.example.inkpaperdiary.core.designsystem.InkPalette
+import com.example.inkpaperdiary.core.designsystem.InkTones
 import com.example.inkpaperdiary.core.designsystem.PaperTypography
 
 /**
@@ -77,11 +78,11 @@ fun IosSegmentedControl(
     val isDark = isSystemInDarkTheme()
     val haptics = LocalHapticFeedback.current
 
-    val trackBgColor = if (isDark) Color(0xFF1C1C1E) else Color(0xFFE5E5EA)
-    val thumbBgColor = if (isDark) Color(0xFF636366) else Color.White
-    val selectedTextColor = if (isDark) Color.White else Color.Black
-    val unselectedTextColor = PaperColors.MonoGray500
-    val separatorColor = if (isDark) Color(0x38FFFFFF) else Color(0x2E000000)
+    val trackBgColor = if (isDark) InkPalette.WashDark else InkPalette.WashLight
+    val thumbBgColor = if (isDark) InkPalette.PaperRaisedDark else InkPalette.PaperRaisedLight
+    val selectedTextColor = if (isDark) InkPalette.InkDark else InkPalette.InkLight
+    val unselectedTextColor = InkTones.secondary(isDark)
+    val separatorColor = if (isDark) InkPalette.HairlineDark else InkPalette.HairlineLight
 
     val validIndex = selectedIndex.coerceIn(0, items.size - 1)
 
@@ -93,7 +94,7 @@ fun IosSegmentedControl(
             .background(trackBgColor)
             .border(
                 width = 0.5.dp,
-                color = if (isDark) Color(0x2EFFFFFF) else Color(0x14000000),
+                color = InkTones.hairline(isDark),
                 shape = RoundedCornerShape(9.dp)
             )
             .padding(2.dp)
@@ -121,7 +122,7 @@ fun IosSegmentedControl(
                 .background(thumbBgColor, shape = RoundedCornerShape(7.dp))
                 .border(
                     width = 0.5.dp,
-                    color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000),
+                    color = InkTones.hairline(isDark),
                     shape = RoundedCornerShape(7.dp)
                 )
         )
