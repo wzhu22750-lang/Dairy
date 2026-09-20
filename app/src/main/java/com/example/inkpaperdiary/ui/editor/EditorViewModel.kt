@@ -132,6 +132,13 @@ class EditorViewModel(
     private var draftAlive = false      // 草稿表中是否存在本会话的草稿
     private var sessionClosed = false   // 离开编辑器之后关闭会话，禁止再写草稿
 
+    /**
+     * 待用户决定的草稿（恢复提示所指向的那一份）。
+     * 独立于 uiState.pendingDraft 保存：IosActionSheet 的行点击会先调用 onDismissRequest()
+     * 收起提示、再执行动作，若动作依赖 uiState.pendingDraft 就会被提前清空而失效。
+     */
+    private var unresolvedDraft: DiaryDraft? = null
+
     /** 是否为"新建日记"会话（diaryId 为空或 "new"） */
     private val isNewSession = diaryId == null || diaryId == "new"
 
@@ -154,6 +161,7 @@ class EditorViewModel(
                 // 打开编辑器即清理历史空草稿（空草稿没有恢复价值）
                 draftStore.purgeEmptyDrafts()
                 val draft = draftStore.getLatestNewDiaryDraft()?.takeIf { !it.isBlank }
+                unresolvedDraft = draft
                 _uiState.update {
                     it.copy(
                         isLoaded = true,
@@ -195,12 +203,16 @@ class EditorViewModel(
                 draftStore.deleteDraft(draft.draftId)
             }
             _uiState.value = base.copy(pendingDraft = recoverable)
+            unresolvedDraft = recoverable
+            // 记下"当前已落库状态"：未做修改就离开时不重写正式日记，也不动待用户决定的草稿
+            lastPromotedPayload = base.toDraftPayload()
         }
     }
 
     /** 恢复提示 - 继续编辑：以草稿内容接管编辑器 */
     fun continuePendingDraft() {
-        val draft = _uiState.value.pendingDraft ?: return
+        val draft = unresolvedDraft ?: return
+        unresolvedDraft = null
         val restored = draft.toEditorState()
         _uiState.value = restored.copy(lastSavedAt = draft.updatedTime)
         draftAlive = true
@@ -211,7 +223,8 @@ class EditorViewModel(
 
     /** 恢复提示 - 删除草稿（新建场景）：草稿与其孤儿配图一并清理，编辑器保持空白 */
     fun discardPendingDraft() {
-        val draft = _uiState.value.pendingDraft ?: return
+        val draft = unresolvedDraft ?: return
+        unresolvedDraft = null
         autosaveScope.launch {
             draftStore.deleteDraft(draft.draftId)
             if (draft.diaryId == null) {
@@ -223,7 +236,8 @@ class EditorViewModel(
 
     /** 恢复提示 - 还原为已保存版本（编辑既有日记场景）：丢弃草稿，回到正式日记内容 */
     fun revertPendingDraftToDiary() {
-        val draft = _uiState.value.pendingDraft ?: return
+        val draft = unresolvedDraft ?: return
+        unresolvedDraft = null
         autosaveScope.launch { draftStore.deleteDraft(draft.draftId) }
         _uiState.update { it.copy(pendingDraft = null) }
     }
@@ -396,19 +410,23 @@ class EditorViewModel(
             if (!state.isLoaded || state.pendingDraft != null) return@withLock
             val payload = state.toDraftPayload()
 
+            // 编辑器内容与最近一次已落库状态一致（打开未编辑、或恢复提示被"暂不处理"）：
+            // 既不重写正式日记，也不删除那份仍待用户决定的草稿
+            if (!draftAlive && payload == lastPromotedPayload) return@withLock
+
             if (payload.isBlank()) {
-                // 空白页：清理会话草稿后结束，不产生任何记录
+                // 空白页：清理本会话草稿；若本会话曾入册，则把清空后的状态同步进正式日记
                 if (draftAlive) {
                     draftStore.deleteDraft(state.id)
                     draftAlive = false
                 }
+                val hadPromotedContent = lastPromotedPayload?.isBlank() == false
+                if (hadPromotedContent) {
+                    diaryStore.saveDiary(state.toDiary())
+                }
                 lastPersistedPayload = null
+                lastPromotedPayload = payload
                 _uiState.update { it.copy(isSaving = false, lastSavedAt = 0L) }
-                return@withLock
-            }
-
-            if (!closeSession && payload == lastPromotedPayload && !draftAlive) {
-                // 会话继续时无新改动，且内容已在正式日记中
                 return@withLock
             }
 

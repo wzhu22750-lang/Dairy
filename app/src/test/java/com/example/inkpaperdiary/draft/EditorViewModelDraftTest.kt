@@ -332,7 +332,47 @@ class EditorViewModelDraftTest {
     }
 
     @Test
-    fun `暂不处理只收起提示且草稿保留`() {
+    fun `暂不处理后直接返回不删除待决定的草稿`() {
+        val diaryId = "diary-pending"
+        diaryStore.diaries[diaryId] = Diary(
+            id = diaryId, title = "正式标题", contentMarkdown = "正式内容",
+            entryDate = 100L, createdAt = 100L, updatedAt = 100L
+        )
+        draftStore.drafts[diaryId] = newDraft(diaryId, diaryId, "未完成编辑", "写到一半", updatedTime = 200L)
+
+        val vm = createViewModel(diaryId = diaryId)
+        scheduler.runCurrent()
+        assertNotNull(vm.uiState.value.pendingDraft)
+
+        vm.dismissPendingDraftPrompt() // 用户暂不处理
+        vm.finishDiary { }             // 随后直接返回
+        scheduler.runCurrent()
+
+        assertTrue("待决定的草稿必须保留", draftStore.drafts.containsKey(diaryId))
+        assertEquals("正式内容", diaryStore.diaries.getValue(diaryId).contentMarkdown)
+    }
+
+    @Test
+    fun `打开既有日记未编辑直接返回不重写正式数据`() {
+        val diaryId = "diary-untouched"
+        diaryStore.diaries[diaryId] = Diary(
+            id = diaryId, title = "原标题", contentMarkdown = "原内容",
+            entryDate = 100L, createdAt = 100L, updatedAt = 100L
+        )
+
+        val vm = createViewModel(diaryId = diaryId)
+        scheduler.runCurrent()
+        vm.finishDiary { }
+        scheduler.runCurrent()
+        vm.promoteNow()
+        scheduler.runCurrent()
+
+        assertEquals("原内容", diaryStore.diaries.getValue(diaryId).contentMarkdown)
+        assertTrue(draftStore.drafts.isEmpty())
+    }
+
+    @Test
+    fun `新建会话暂不处理只收起提示且草稿保留`() {
         draftStore.drafts["d1"] = newDraft("d1", null, updatedTime = 100L)
         val vm = createViewModel()
         scheduler.runCurrent()
@@ -375,6 +415,61 @@ class EditorViewModelDraftTest {
     // ------------------------------------------------------------------
     // 6. 多个草稿管理
     // ------------------------------------------------------------------
+
+    @Test
+    fun `恢复提示按钮在ActionSheet先收起再执行时仍然生效`() {
+        // 回归：IosActionSheet 行点击实现为 onDismissRequest() -> action.onClick()，
+        // 动作若依赖 uiState.pendingDraft 会被提前清空而失效
+        draftStore.drafts["d1"] = newDraft("d1", null, "草稿标题", "草稿正文", updatedTime = 100L)
+        val vm = createViewModel()
+        scheduler.runCurrent()
+        assertNotNull(vm.uiState.value.pendingDraft)
+
+        vm.dismissPendingDraftPrompt() // ActionSheet 先收起提示
+        vm.continuePendingDraft()      // 再执行"继续编辑"
+
+        assertEquals("草稿正文", vm.uiState.value.contentMarkdown)
+        assertEquals("草稿标题", vm.uiState.value.title)
+        assertEquals(100L, vm.uiState.value.lastSavedAt)
+        assertEquals("d1", vm.uiState.value.id)
+    }
+
+    @Test
+    fun `删除草稿按钮在ActionSheet先收起再执行时仍然生效`() {
+        draftStore.drafts["d1"] = newDraft("d1", null, "草稿标题", "草稿正文", updatedTime = 100L)
+        val vm = createViewModel()
+        scheduler.runCurrent()
+        assertNotNull(vm.uiState.value.pendingDraft)
+
+        vm.dismissPendingDraftPrompt() // ActionSheet 先收起提示
+        vm.discardPendingDraft()       // 再执行"删除草稿"
+        scheduler.runCurrent()
+
+        assertTrue("草稿应被删除", draftStore.drafts.isEmpty())
+        assertEquals("", vm.uiState.value.contentMarkdown)
+    }
+
+    @Test
+    fun `还原为已保存版本按钮在ActionSheet先收起再执行时仍然生效`() {
+        val diaryId = "diary-rv"
+        diaryStore.diaries[diaryId] = Diary(
+            id = diaryId, title = "正式版本", contentMarkdown = "已保存内容",
+            entryDate = 100L, createdAt = 100L, updatedAt = 100L
+        )
+        draftStore.drafts[diaryId] = newDraft(diaryId, diaryId, "未完成", "未保存内容", updatedTime = 200L)
+
+        val vm = createViewModel(diaryId = diaryId)
+        scheduler.runCurrent()
+        assertNotNull(vm.uiState.value.pendingDraft)
+
+        vm.dismissPendingDraftPrompt()      // ActionSheet 先收起提示
+        vm.revertPendingDraftToDiary()      // 再执行"还原为已保存版本"
+        scheduler.runCurrent()
+
+        assertTrue("草稿应被删除", draftStore.drafts.isEmpty())
+        assertEquals("已保存内容", vm.uiState.value.contentMarkdown)
+        assertEquals("正式版本", vm.uiState.value.title)
+    }
 
     @Test
     fun `多个草稿共存且恢复最新的一个`() {
